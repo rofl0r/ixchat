@@ -1585,3 +1585,24 @@ safe_strcpy (char *dest, const char *src, int bytes_left)
 		}
 	}
 }
+
+char *
+encode_sasl_pass (char *user, char *pass)
+{
+	int passlen;
+	char *buffer;
+	char *encoded;
+
+	/* passphrase generation, nicely copy-pasted from the CAP-SASL plugin */
+	passlen = strlen (user) * 2 + 2 + strlen (pass);
+	buffer = (char*) malloc (passlen + 1);
+	strcpy (buffer, user);
+	strcpy (buffer + strlen (user) + 1, user);
+	strcpy (buffer + strlen (user) * 2 + 2, pass);
+	encoded = g_base64_encode ((unsigned char*) buffer, passlen);
+
+	free (buffer);
+
+	return encoded;
+}
+

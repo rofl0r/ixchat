@@ -50,5 +50,6 @@ int token_foreach (char *str, char sep, int (*callback) (char *str, void *ud), v
 guint32 str_hash (const char *key);
 guint32 str_ihash (const unsigned char *key);
 void safe_strcpy (char *dest, const char *src, int bytes_left);
+char *encode_sasl_pass (char *user, char *pass);
 
 #endif
