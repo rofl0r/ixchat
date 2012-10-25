@@ -406,6 +406,8 @@ typedef struct server
 	char hostname[128];				/* real ip number */
 	char servername[128];			/* what the server says is its name */
 	char password[86];
+	char sasluser[30];
+	char saslpassword[86];
 	char nick[NICKLEN];
 	char linebuf[2048];				/* RFC says 512 chars including \r\n */
 	char *last_away_reason;
@@ -468,6 +470,7 @@ typedef struct server
 	unsigned int have_whox:1;		/* have undernet's WHOX features */
 	unsigned int have_capab:1;		/* supports CAPAB (005 tells us) */
 	unsigned int have_idmsg:1;		/* freenode's IDENTIFY-MSG */
+	unsigned int have_sasl:1;		/* SASL capability */
 	unsigned int have_except:1;	/* ban exemptions +e */
 	unsigned int using_cp1255:1;	/* encoding is CP1255/WINDOWS-1255? */
 	unsigned int using_irc:1;		/* encoding is "IRC" (CP1252/UTF-8 hybrid)? */
