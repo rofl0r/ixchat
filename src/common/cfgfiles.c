@@ -640,7 +640,7 @@ load_config (void)
 	strcpy (prefs.username, username);
 	snprintf (prefs.sounddir, sizeof (prefs.sounddir), "%s/sounds", get_xdir_utf8 ());
 	snprintf (prefs.dccdir, sizeof (prefs.dccdir), "%s/downloads", get_xdir_utf8 ());
-	strcpy (prefs.doubleclickuser, "QUOTE WHOIS %s %s");
+	strcpy (prefs.doubleclickuser, "QUERY %s");
 	strcpy (prefs.awayreason, _("I'm busy"));
 	strcpy (prefs.quitreason, _("Leaving"));
 	strcpy (prefs.partreason, prefs.quitreason);
