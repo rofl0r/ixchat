@@ -907,7 +907,7 @@ servlist_load_defaults (void)
 		if (def[i].network)
 		{
 			net = servlist_net_add (def[i].network, def[i].host, FALSE);
-			net->encoding = strdup ("IRC (Latin/Unicode Hybrid)");
+			net->encoding = strdup ("UTF-8 (Unicode)");
 			if (def[i].channel)
 				net->autojoin = strdup (def[i].channel);
 			if (def[i].charset)
