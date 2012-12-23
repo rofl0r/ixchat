@@ -1402,15 +1402,27 @@ xchat_list_int (xchat_plugin *ph, xchat_list *xlist, const char *name)
 		case 0x1b254: /* pos */
 			return ((struct DCC *)data)->pos & 0xffffffff;
 		case 0xe8a945f6: /* poshigh */
+#ifdef USE_DCC64
 			return (((struct DCC *)data)->pos >> 32) & 0xffffffff;
+#else
+			return (((struct DCC *)data)->pos);
+#endif
 		case 0xc84dc82d: /* resume */
 			return ((struct DCC *)data)->resumable & 0xffffffff;
 		case 0xded4c74f: /* resumehigh */
+#ifdef USE_DCC64
 			return (((struct DCC *)data)->resumable >> 32) & 0xffffffff;
+#else
+			return (((struct DCC *)data)->resumable);
+#endif
 		case 0x35e001: /* size */
 			return ((struct DCC *)data)->size & 0xffffffff;
 		case 0x3284d523: /* sizehigh */
+#ifdef USE_DCC64
 			return (((struct DCC *)data)->size >> 32) & 0xffffffff;
+#else
+			return (((struct DCC *)data)->size);
+#endif
 		case 0xcacdcff2: /* status */
 			return ((struct DCC *)data)->dccstat;
 		case 0x368f3a: /* type */
