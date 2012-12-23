@@ -1,0 +1,121 @@
+#!/bin/sh
+
+prefix=/usr/local
+
+libs=`cat << EOF
+glib-2.0
+gtk+-2.0
+openssl
+EOF`
+
+
+clear_config() {
+	rm config.mak
+}
+
+add_config() {
+	printf "%s\n" "$1" >> config.mak
+}
+
+add_cflags() {
+	add_config "CFLAGS += $1"
+}
+
+add_ldflags() {
+	add_config "LDFLAGS += $1"
+}
+
+add_pkgconf_cflags() {
+	flags=$(pkg-config --cflags "$1")
+	add_cflags "$flags"
+}
+
+add_pkgconf_ldflags() {
+	flags=$(pkg-config --libs "$1")
+	add_ldflags "$flags"
+}
+
+add_lib() {
+	add_pkgconf_cflags "$1"
+	add_pkgconf_ldflags "$1"
+}
+
+check_program() {
+	program="$1"
+	needed="$2"
+	result=$(which "$program" 2>/dev/null)
+	if [ "$needed" = "1" ] && [ -z "$result" ] ; then
+		echo "error: needed program $program not found"
+		exit 1
+	fi
+	printf "%s\n" "$program"
+}
+
+usage() {
+	echo "supported arguments"
+	echo "--prefix=/path 		default: $prefix"
+	echo "--exec_prefix=/path	default: $prefix/bin"
+	echo "--bindir=/path		default: $prefix/bin"
+	echo "--libdir=/path		default: $prefix/lib"
+	echo "--includedir=/path	default: $prefix/include"
+	echo "--sysconfdir=/path	default: $prefix/etc"
+	echo "--help : show this text"
+	exit 1
+}
+
+spliteq() {
+	arg=$1
+	echo "${arg#*=}"
+	#alternatives echo "$arg" | cut -d= -f2-
+	# or echo "$arg" | sed 's/[^=]*=//'
+}
+
+parsearg() {
+	case "$1" in
+	--prefix=*) prefix=`spliteq $1`;;
+	--exec_prefix=*) exec_prefix=`spliteq $1`;;
+	--bindir=*) bindir=`spliteq $1`;;
+	--libdir=*) libdir=`spliteq $1`;;
+	--includedir=*) includedir=`spliteq $1`;;
+	--sysconfdir=*) sysconfdir=`spliteq $1`;;
+	--help) usage;;
+	esac
+}
+
+while true ; do
+	case $1 in
+	-*) parsearg "$1"; shift;;
+	*) break ;;
+	esac
+done
+
+[ -z "$exec_prefix" ] && exec_prefix=$prefix
+[ -z "$libdir" ] && libdir=$prefix/lib
+[ -z "$includedir" ] && includedir=$prefix/include
+[ -z "$sysconfdir" ] && sysconfdir=$prefix/etc
+[ -z "$bindir" ] && bindir=$exec_prefix/bin
+[ -z "$CC" ] && CC=cc
+
+clear_config
+
+add_config "prefix = $prefix"
+add_config "exec_prefix = $exec_prefix"
+add_config "bindir = $bindir"
+add_config "libdir = $libdir"
+add_config "includedir = $includedir"
+add_config "sysconfdir = $sysconfdir"
+
+add_config "CC ?= $CC"
+[ -z "$CPPFLAGS" ] || add_config "CPPFLAGS ?= $CPPFLAGS"
+[ -z "$CFLAGS" ] ||   add_config "CFLAGS ?= $CFLAGS"
+
+add_cflags "-DXCHATLIBDIR=\\\"$libdir/xchat\\\""
+add_cflags "-DXCHATSHAREDIR=\\\"$prefix/share/xchat\\\""
+
+for lib in $libs ; do add_lib "$lib" ; done
+
+prog1=$(check_program "gdk-pixbuf-csource" 1)
+add_config "PIXMAPCONVERT = $prog1"
+
+echo done, now run make \&\& make install
+
