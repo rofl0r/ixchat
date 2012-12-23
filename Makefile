@@ -39,7 +39,7 @@ PIXMAPLIST = traymsgpng $(pixsrcdir)/message.png \
 
 all: $(ALL_TOOLS)
 
-install: $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%)
+install: $(ALL_TOOLS:%=$(DESTDIR)$(bindir)/%)
 
 ixchat: $(OBJS)
 	$(CC) $(LDFLAGS) -o ixchat $(OBJS)
@@ -55,7 +55,7 @@ $(PIXMAP): $(PNGS)
 %.o: %.c $(PIXMAP)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(DESTDIR)$(bindir)/%: tools/%
+$(DESTDIR)$(bindir)/%: %
 	install -D $< $@
 
 $(DESTDIR)$(prefix)/%: %
