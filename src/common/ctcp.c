@@ -134,9 +134,7 @@ ctcp_handle (session *sess, char *to, char *nick, char *ip,
 
 	if (!strcasecmp (msg, "VERSION") && !prefs.hidever)
 	{
-		snprintf (outbuf, sizeof (outbuf), "VERSION xchat "PACKAGE_VERSION" %s",
-					 get_cpu_str ());
-		serv->p_nctcp (serv, nick, outbuf);
+		serv->p_nctcp (serv, nick, "VERSION Purple IRC");
 	}
 
 	if (!ctcp_check (sess, nick, word, word_eol, word[4] + ctcp_offset))
