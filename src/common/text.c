@@ -1973,14 +1973,16 @@ color_of (char *name)
 
 
 /* called by EMIT_SIGNAL macro */
-
+#include <stdio.h>
 void
-text_emit (int index, session *sess, char *a, char *b, char *c, char *d)
+text_emit (int index, session *sess, char *a, char *b, char *c, char *d, char* file, int lineno)
 {
 	char *word[PDIWORDS];
 	int i;
 	unsigned int stripcolor_args = (prefs.stripcolor ? 0xFFFFFFFF : 0);
 	char tbuf[NICKLEN + 4];
+
+	dprintf(2, "%s:%d %s %s %s %s\n", file, lineno, a ? a : "", b ? b : "", c ? c : "", d ? d : "");
 
 	if (prefs.colorednicks && (index == XP_TE_CHANACTION || index == XP_TE_CHANMSG))
 	{
@@ -2076,7 +2078,7 @@ text_emit_by_name (char *name, session *sess, char *a, char *b, char *c, char *d
 	i = pevent_find (name, &i);
 	if (i >= 0)
 	{
-		text_emit (i, sess, a, b, c, d);
+		text_emit (i, sess, a, b, c, d, "", 0);
 		return 1;
 	}
 

@@ -3,7 +3,11 @@
 #ifndef XCHAT_TEXT_H
 #define XCHAT_TEXT_H
 
-#define EMIT_SIGNAL(i, sess, a, b, c, d, e) text_emit(i, sess, a, b, c, d)
+#ifdef __GNUC__
+#define EMIT_SIGNAL(i, sess, a, b, c, d, e) text_emit(i, sess, a, b, c, d, __FILE__, __LINE__)
+#else
+#define EMIT_SIGNAL(i, sess, a, b, c, d, e) text_emit(i, sess, a, b, c, d, "", 0)
+#endif
 
 struct text_event
 {
@@ -26,7 +30,7 @@ void pevent_save (char *fn);
 int pevt_build_string (const char *input, char **output, int *max_arg);
 int pevent_load (char *filename);
 void pevent_make_pntevts (void);
-void text_emit (int index, session *sess, char *a, char *b, char *c, char *d);
+void text_emit (int index, session *sess, char *a, char *b, char *c, char *d, char* file, int lineno);
 int text_emit_by_name (char *name, session *sess, char *a, char *b, char *c, char *d);
 char *text_validate (char **text, int *len);
 int get_stamp_str (char *fmt, time_t tim, char **ret);
