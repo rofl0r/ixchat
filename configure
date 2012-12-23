@@ -6,7 +6,8 @@ libs=`cat << EOF
 glib-2.0
 gtk+-2.0
 openssl
-EOF`
+EOF
+`
 
 
 clear_config() {
