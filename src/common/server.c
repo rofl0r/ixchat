@@ -844,32 +844,7 @@ server_flush_queue (server *serv)
 	fe_set_throttle (serv);
 }
 
-#ifdef WIN32
-
-static int
-waitline2 (GIOChannel *source, char *buf, int bufsize)
-{
-	int i = 0;
-	int len;
-
-	while (1)
-	{
-		if (g_io_channel_read (source, &buf[i], 1, &len) != G_IO_ERROR_NONE)
-			return -1;
-		if (buf[i] == '\n' || bufsize == i + 1)
-		{
-			buf[i] = 0;
-			return i;
-		}
-		i++;
-	}
-}
-
-#else
-
 #define waitline2(source,buf,size) waitline(serv->childread,buf,size,0)
-
-#endif
 
 /* connect() successed */
 
@@ -885,7 +860,7 @@ server_connect_success (server *serv)
 		/* it'll be a memory leak, if connection isn't terminated by
 		   server_cleanup() */
 		serv->ssl = _SSL_socket (ctx, serv->sok);
-		if ((err = _SSL_set_verify (ctx, ssl_cb_verify, NULL)))
+		if ((err = _SSL_set_verify (ctx, ssl_cb_verify, NULL)) && !serv->accept_invalid_cert)
 		{
 			EMIT_SIGNAL (XP_TE_CONNFAIL, serv->server_session, err, NULL,
 							 NULL, NULL, 0);
