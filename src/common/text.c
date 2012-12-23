@@ -38,9 +38,6 @@
 #include "outbound.h"
 #include "xchatc.h"
 #include "text.h"
-#ifdef WIN32
-#include <windows.h>
-#endif
 
 struct pevt_stage1
 {
