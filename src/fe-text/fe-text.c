@@ -427,12 +427,6 @@ fe_main (void)
 	if (!sess_list)
 		new_ircwindow (NULL, NULL, SESS_SERVER, 0);
 
-#ifdef ENABLE_NLS
-	bindtextdomain (GETTEXT_PACKAGE, PREFIX"/share/locale");
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
-#endif
-
 	while (!done)
 	{
 		FD_ZERO (&rd);

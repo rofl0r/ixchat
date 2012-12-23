@@ -25,15 +25,10 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef WIN32
-#include <sys/timeb.h>
-#include <process.h>
-#else
 #include <sys/types.h>
 #include <pwd.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
-#endif
 #include <fcntl.h>
 #include <dirent.h>
 #include <errno.h>
@@ -42,7 +37,6 @@
 #include <glib.h>
 #include <ctype.h>
 #include "util.h"
-#include "../../config.h"
 
 #define WANTSOCKET
 #include "inet.h"
@@ -52,10 +46,6 @@
 #endif
 #ifdef SOCKS
 #include <socks.h>
-#endif
-
-#ifndef HAVE_SNPRINTF
-#define snprintf g_snprintf
 #endif
 
 #ifdef USE_DEBUG

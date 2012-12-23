@@ -1,33 +1,10 @@
-#include "../../config.h"
-
-#ifdef WIN32
-/* If you're compiling this for Windows, your release is un-official
- * and not condoned. Please don't use the XChat name. Make up your
- * own name! */
-#define DISPLAY_NAME "XChat-Unofficial"
-#else
 #define DISPLAY_NAME "XChat"
-#endif
 
-#ifndef WIN32
 #include <sys/types.h>
 #include <regex.h>
-#endif
 
-#if defined(ENABLE_NLS) && !defined(_)
-#  include <libintl.h>
-#  define _(x) gettext(x)
-#  ifdef gettext_noop
-#    define N_(String) gettext_noop (String)
-#  else
-#    define N_(String) (String)
-#  endif
-#endif
-#if !defined(ENABLE_NLS) && defined(_)
-#  undef _
-#  define N_(String) (String)
-#  define _(x) (x)
-#endif
+#define N_(String) (String)
+#define _(x) (x)
 
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkcontainer.h>
@@ -78,10 +55,8 @@ struct server_gui
 	gboolean chanlist_match_wants_channel;	/* match in channel name */
 	gboolean chanlist_match_wants_topic;	/* match in topic */
 
-#ifndef WIN32
 	regex_t chanlist_match_regex;	/* compiled regular expression here */
 	unsigned int have_regex;
-#endif
 
 	guint chanlist_users_found_count;	/* users total for all channels */
 	guint chanlist_users_shown_count;	/* users total for displayed channels */

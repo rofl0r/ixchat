@@ -1,20 +1,14 @@
-#include "../../config.h"
+#ifndef XCHAT_H
+#define XCHAT_H
 
 #include <glib.h>
 #include <time.h>			/* need time_t */
 
-#ifndef XCHAT_H
-#define XCHAT_H
-
+#include "version.h"
 #include "history.h"
 
-#ifndef HAVE_SNPRINTF
-#define snprintf g_snprintf
-#endif
-
-#ifndef HAVE_VSNPRINTF
-#define vsnprintf g_vsnprintf
-#endif
+#define N_(String) (String)
+#define _(x) (x)
 
 #ifdef USE_DEBUG
 #define malloc(n) xchat_malloc(n, __FILE__, __LINE__)
@@ -27,46 +21,14 @@ void xchat_dfree (void *buf, char *file, int line);
 void *xchat_realloc (char *old, int len, char *file, int line);
 #endif
 
-#ifdef SOCKS
-#ifdef __sgi
-#include <sys/time.h>
-#define INCLUDE_PROTOTYPES 1
-#endif
-#include <socks.h>
-#endif
-
-#ifdef USE_OPENSSL
 #include <openssl/ssl.h>		  /* SSL_() */
-#endif
-
-#ifdef __EMX__						  /* for o/s 2 */
-#define OFLAGS O_BINARY
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
-#define PATH_MAX MAXPATHLEN
-#define FILEPATH_LEN_MAX MAXPATHLEN
-#endif
 
 /* force a 32bit CMP.L */
 #define CMPL(a, c0, c1, c2, c3) (a == (guint32)(c0 | (c1 << 8) | (c2 << 16) | (c3 << 24)))
 #define WORDL(c0, c1, c2, c3) (guint32)(c0 | (c1 << 8) | (c2 << 16) | (c3 << 24))
 #define WORDW(c0, c1) (guint16)(c0 | (c1 << 8))
 
-#ifdef WIN32						/* for win32 */
-#define OFLAGS O_BINARY
-#define sleep(t) _sleep(t*1000)
-#include <direct.h>
-#define	F_OK	0
-#define	X_OK	1
-#define	W_OK	2
-#define	R_OK	4
-#ifndef S_ISDIR
-#define	S_ISDIR(m)	((m) & _S_IFDIR)
-#endif
-#define NETWORK_PRIVATE
-#else									/* for unix */
 #define OFLAGS 0
-#endif
 
 #define FONTNAMELEN	127
 #define PATHLEN		255
@@ -76,20 +38,6 @@ void *xchat_realloc (char *old, int len, char *file, int line);
 #define PDIWORDS		32
 #define USERNAMELEN 10
 #define HIDDEN_CHAR	8			/* invisible character for xtext */
-
-#if defined(ENABLE_NLS) && !defined(_)
-#  include <libintl.h>
-#  define _(x) gettext(x)
-#  ifdef gettext_noop
-#    define N_(String) gettext_noop (String)
-#  else
-#    define N_(String) (String)
-#  endif
-#endif
-#if !defined(_)
-#  define N_(String) (String)
-#  define _(x) (x)
-#endif
 
 struct nbexec
 {
@@ -524,10 +472,8 @@ typedef struct server
 	unsigned int using_cp1255:1;	/* encoding is CP1255/WINDOWS-1255? */
 	unsigned int using_irc:1;		/* encoding is "IRC" (CP1252/UTF-8 hybrid)? */
 	unsigned int use_who:1;			/* whether to use WHO command to get dcc_ip */
-#ifdef USE_OPENSSL
 	unsigned int use_ssl:1;				  /* is server SSL capable? */
 	unsigned int accept_invalid_cert:1;/* ignore result of server's cert. verify */
-#endif
 } server;
 
 typedef int (*cmd_callback) (struct session * sess, char *tbuf, char *word[],

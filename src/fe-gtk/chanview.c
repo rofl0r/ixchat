@@ -74,12 +74,12 @@ static int cv_find_number_of_chan (chanview *cv, chan *find_ch);
 
 /* ======= TABS ======= */
 
-#include "chanview-tabs.c"
+#include "chanview-tabs.h"
 
 
 /* ======= TREE ======= */
 
-#include "chanview-tree.c"
+#include "chanview-tree.h"
 
 
 /* ==== ABSTRACT CHANVIEW ==== */

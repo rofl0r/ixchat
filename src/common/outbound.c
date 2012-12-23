@@ -28,9 +28,7 @@
 #define WANTARPA
 #include "inet.h"
 
-#ifndef WIN32
 #include <sys/wait.h>
-#endif
 
 #include <unistd.h>
 #include <time.h>
@@ -1646,19 +1644,6 @@ norm:			nbuf[j] = buf[i];
 	memcpy (buf, nbuf, j + 1);
 	free (nbuf);
 }
-
-#ifndef HAVE_MEMRCHR
-static void *
-memrchr (const void *block, int c, size_t size)
-{
-	unsigned char *p;
-
-	for (p = (unsigned char *)block + size; p != block; p--)
-		if (*p == c)
-			return p;
-	return 0;
-}
-#endif
 
 static gboolean
 exec_data (GIOChannel *source, GIOCondition condition, struct nbexec *s)
