@@ -112,6 +112,7 @@ add_config "CC ?= $CC"
 
 add_cflags "-DXCHATLIBDIR=\\\"$libdir/xchat\\\""
 add_cflags "-DXCHATSHAREDIR=\\\"$prefix/share/xchat\\\""
+add_cflags "-DUSE_OPENSSL"
 
 for lib in $libs ; do add_lib "$lib" ; done
 
