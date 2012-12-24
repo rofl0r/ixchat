@@ -50,6 +50,12 @@ $(DESTDIR)$(libdir)/xchat/plugins/%: %
 $(PERL_HEADERS):
 	plugins/perl/generate_header
 
+python.so: plugins/python/python.o
+	$(CC) $< -shared -o $@ $(LDFLAGS) $(PY_LDFLAGS)
+
+plugins/python/python.o: plugins/python/python.c
+	$(CC) $(CFLAGS) $(PY_CFLAGS) -fPIC -c $< -o $@
+
 perl.so: plugins/perl/perl.o
 	$(CC) $< -shared -o $@ $(LDFLAGS) $(PERL_LDFLAGS)
 

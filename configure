@@ -27,13 +27,21 @@ add_ldflags() {
 	add_config "LDFLAGS += $1"
 }
 
+get_pkgconf_cflags() {
+	pkg-config --cflags "$1" 2>/dev/null
+}
+
+get_pkgconf_ldflags() {
+	pkg-config --libs "$1" 2>/dev/null
+}
+
 add_pkgconf_cflags() {
-	flags=$(pkg-config --cflags "$1")
+	flags=$(get_pkgconf_cflags "$1")
 	add_cflags "$flags"
 }
 
 add_pkgconf_ldflags() {
-	flags=$(pkg-config --libs "$1")
+	flags=$(get_pkgconf_ldflags "$1")
 	add_ldflags "$flags"
 }
 
@@ -120,6 +128,10 @@ for lib in $libs ; do add_lib "$lib" ; done
 prog1=$(check_program "gdk-pixbuf-csource" 1)
 add_config "PIXMAPCONVERT = $prog1"
 
+# plugin stuff ...
+
+use_plugin=
+
 perl=$(check_program "perl" 0)
 if [ -n "$perl" ] ; then
 	PERL_CFLAGS=`$perl -MExtUtils::Embed -e ccopts 2>/dev/null`
@@ -127,8 +139,25 @@ if [ -n "$perl" ] ; then
 	add_config "PERL_CFLAGS = $PERL_CFLAGS"
 	add_config "PERL_LDFLAGS = $PERL_LDFLAGS"
 	add_config "PLUGINS += perl.so"
-	add_cflags "-DUSE_PLUGIN"
+	if [ -z "$use_plugin" ] ; then
+		add_cflags "-DUSE_PLUGIN"
+		use_plugin=1
+	fi
 fi
+
+python=$(check_program "python" 0)
+if [ -n "$python" ] ; then
+	PY_CFLAGS=$(get_pkgconf_cflags python)
+	PY_LDFLAGS=$(get_pkgconf_ldflags python)
+	add_config "PY_CFLAGS = $PY_CFLAGS"
+	add_config "PY_LDFLAGS = $PY_LDFLAGS"
+	add_config "PLUGINS += python.so"
+	if [ -z "$use_plugin" ] ; then
+		add_cflags "-DUSE_PLUGIN"
+		use_plugin=1
+	fi
+fi
+
 
 echo done, now run make \&\& make install
 
