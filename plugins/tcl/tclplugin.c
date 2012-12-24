@@ -2194,13 +2194,6 @@ static void Tcl_Plugin_DeInit()
     Tcl_DeleteInterp(interp);
 }
 
-static void banner()
-{
-    xchat_printf(ph, "Tcl plugin for XChat - Version %s\n", VERSION);
-    xchat_print(ph, "Copyright 2002-2012 Daniel P. Stasinski\n");
-    xchat_print(ph, "http://www.scriptkitties.com/tclplugin/\n");
-}
-
 int xchat_plugin_init(xchat_plugin * plugin_handle, char **plugin_name, char **plugin_desc, char **plugin_version, char *arg)
 {
     strncpy(VERSION, &RCSID[19], 5);
@@ -2208,7 +2201,6 @@ int xchat_plugin_init(xchat_plugin * plugin_handle, char **plugin_name, char **p
     ph = plugin_handle;
 
     if (initialized != 0) {
-        banner();
         xchat_print(ph, "Tcl plugin already loaded");
         reinit_tried++;
         return 0;
@@ -2229,7 +2221,6 @@ int xchat_plugin_init(xchat_plugin * plugin_handle, char **plugin_name, char **p
     Event_Handler_hook = xchat_hook_timer(ph, 100, TCL_Event_Handler, 0);
     Null_Command_hook = xchat_hook_command(ph, "", XCHAT_PRI_NORM, Null_Command_Alias, "", 0);
 
-    banner();
     xchat_print(ph, "Tcl interface loaded\n");
 
     return 1;                   /* return 1 for success */
