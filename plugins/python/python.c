@@ -58,7 +58,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-#include "xchat-plugin.h"
+#include "../xchat-plugin.h"
 #include "Python.h"
 #include "structmember.h"
 #include "pythread.h"
@@ -66,12 +66,7 @@
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
 
-#ifdef WIN32
-#undef WITH_THREAD /* Thread support locks up xchat on Win32. */
-#define VERSION "0.8/2.4"	/* Linked to python24.dll */
-#else
 #define VERSION "0.8"
-#endif
 
 #define NONE 0
 #define ALLOW_THREADS 1
@@ -1171,23 +1166,6 @@ Plugin_New(char *filename, PyMethodDef *xchat_methods, PyObject *xcoobj)
 	PyObject_SetAttrString(m, "__version__", o);
 
 	if (filename) {
-#ifdef WIN32
-		PyObject* PyFileObject = PyFile_FromString(filename, "r");
-		if (PyFileObject == NULL) {
-			xchat_printf(ph, "Can't open file %s: %s\n",
-				     filename, strerror(errno));
-			goto error;
-		}
-
-		if (PyRun_SimpleFile(PyFile_AsFile(PyFileObject), filename) != 0) {
-			xchat_printf(ph, "Error loading module %s\n",
-				     filename);
-			goto error;
-		}
-
-		plugin->filename = filename;
-		filename = NULL;
-#else
 		FILE *fp;
 
 		plugin->filename = filename;
@@ -1211,7 +1189,6 @@ Plugin_New(char *filename, PyMethodDef *xchat_methods, PyObject *xcoobj)
 			goto error;
 		}
 		fclose(fp);
-#endif
 		m = PyDict_GetItemString(PyImport_GetModuleDict(),
 					 "__main__");
 		if (m == NULL) {
