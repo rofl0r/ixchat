@@ -34,12 +34,22 @@ PIXMAPLIST = traymsgpng $(pixsrcdir)/message.png \
              voicepng $(pixsrcdir)/voice.png \
              xchatpng $(pixsrcdir)/../../xchat.png
 
+PERL_HEADERS = plugins/perl/irc.pm.h plugins/perl/xchat.pm.h
 
 -include config.mak
 
-all: $(ALL_TOOLS)
+all: $(ALL_TOOLS) $(PLUGINS)
 
-install: $(ALL_TOOLS:%=$(DESTDIR)$(bindir)/%)
+install: $(ALL_TOOLS:%=$(DESTDIR)$(bindir)/%) $(PLUGINS:%=$(DESTDIR)$(libdir)/xchat/%)
+
+$(PERL_HEADERS):
+	plugins/perl/generate_header
+
+plugins/perl/perl.so: plugins/perl/perl.o
+	$(CC) $(LDFLAGS) $(PERL_LDFLAGS) $< -shared -Wl,-soname=perl.so -o $@
+
+plugins/perl/perl.o: plugins/perl/perl.c $(PERL_HEADERS)
+	$(CC) $(CFLAGS) $(PERL_CFLAGS) -fPIC -c $< -o $@
 
 ixchat: $(OBJS)
 	$(CC) $(LDFLAGS) -o ixchat $(OBJS)
@@ -48,6 +58,7 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(PIXMAP)
 	rm -f $(ALL_TOOLS)
+	rm -f $(PERL_HEADERS)
 
 $(PIXMAP): $(PNGS)
 	$(PIXMAPCONVERT) --raw --build-list $(PIXMAPLIST) > $(PIXMAP)

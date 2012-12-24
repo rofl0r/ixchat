@@ -120,5 +120,14 @@ for lib in $libs ; do add_lib "$lib" ; done
 prog1=$(check_program "gdk-pixbuf-csource" 1)
 add_config "PIXMAPCONVERT = $prog1"
 
+perl=$(check_program "perl" 0)
+if [ -n "$perl" ] ; then
+	PERL_CFLAGS=`$perl -MExtUtils::Embed -e ccopts 2>/dev/null`
+	PERL_LDFLAGS=`$perl -MExtUtils::Embed -e ldopts 2>/dev/null | sed 's/-lgdbm //'`
+	add_config "PERL_CFLAGS = $PERL_CFLAGS"
+	add_config "PERL_LDFLAGS = $PERL_LDFLAGS"
+	add_config "PLUGINS += plugins/perl/perl.so"
+fi
+
 echo done, now run make \&\& make install
 
