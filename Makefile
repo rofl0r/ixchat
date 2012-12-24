@@ -50,6 +50,12 @@ $(DESTDIR)$(libdir)/xchat/plugins/%: %
 $(PERL_HEADERS):
 	plugins/perl/generate_header
 
+tcl.so: plugins/tcl/tcl.o
+	$(CC) $< -shared -o $@ $(LDFLAGS) $(TCL_LDFLAGS)
+
+plugins/tcl/tcl.o: plugins/tcl/tclplugin.c
+	$(CC) $(CFLAGS) $(TCL_CFLAGS) -fPIC -c $< -o $@
+
 python.so: plugins/python/python.o
 	$(CC) $< -shared -o $@ $(LDFLAGS) $(PY_LDFLAGS)
 

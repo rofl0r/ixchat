@@ -158,6 +158,37 @@ if [ -n "$python" ] ; then
 	fi
 fi
 
+tcl=$(check_program "tclsh" 0)
+if [ -n "$tcl" ] ; then
+	TCL_CFLAGS=$(get_pkgconf_cflags tcl)
+	TCL_LDFLAGS=$(get_pkgconf_ldflags tcl)
+	tcl_error=
+	if [ -z "$TCL_LDFLAGS" ] ; then
+		tcl_found=
+		for i in "$libdir"/tclConfig.sh "$prefix"/lib/tclConfig.sh "$prefix"/lib64/tclConfig.sh ; do
+			if [ -e "$i" ] ; then
+				. "$i"
+				TCL_LDFLAGS="$TCL_LIB_SPEC $TCL_LIBS"
+				tcl_found=1
+			fi
+		done
+		if [ -z "$tcl_found" ] ; then
+			echo "warning: tclConfig.sh not found and no pkgconfig entry available"
+			echo "disabling tcl plugin"
+			tcl_error=1
+		fi
+	fi
+	if [ -z "$tcl_error" ] ; then
+		add_config "TCL_CFLAGS = $TCL_CFLAGS"
+		add_config "TCL_LDFLAGS = $TCL_LDFLAGS"
+		add_config "PLUGINS += tcl.so"
+		if [ -z "$use_plugin" ] ; then
+			add_cflags "-DUSE_PLUGIN"
+			use_plugin=1
+		fi
+	fi
+fi
+
 
 echo done, now run make \&\& make install
 
