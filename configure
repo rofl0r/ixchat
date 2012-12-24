@@ -47,8 +47,8 @@ check_program() {
 	needed="$2"
 	result=$(which "$program" 2>/dev/null)
 	if [ "$needed" = "1" ] && [ -z "$result" ] ; then
-		echo "error: needed program $program not found"
-		exit 1
+		echo "error: needed program $program not found" >&2
+		kill -9 $$
 	fi
 	printf "%s\n" "$program"
 }
