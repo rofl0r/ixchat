@@ -143,6 +143,8 @@ if [ -n "$perl" ] ; then
 		add_cflags "-DUSE_PLUGIN"
 		use_plugin=1
 	fi
+	# there are actually 2 plugins, "old" and new, but all scripts i've seen only use old
+	add_cflags "-DOLD_PERL"
 fi
 
 python=$(check_program "python" 0)
