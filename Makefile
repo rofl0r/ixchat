@@ -51,19 +51,19 @@ $(PERL_HEADERS):
 	plugins/perl/generate_header
 
 tcl.so: plugins/tcl/tcl.o
-	$(CC) $< -shared -o $@ $(LDFLAGS) $(TCL_LDFLAGS)
+	$(CC) $< -shared -rdynamic -o $@ $(LDFLAGS) $(TCL_LDFLAGS)
 
 plugins/tcl/tcl.o: plugins/tcl/tclplugin.c
 	$(CC) $(CFLAGS) $(TCL_CFLAGS) -fPIC -c $< -o $@
 
 python.so: plugins/python/python.o
-	$(CC) $< -shared -o $@ $(LDFLAGS) $(PY_LDFLAGS)
+	$(CC) $< -shared -rdynamic -o $@ $(LDFLAGS) $(PY_LDFLAGS)
 
 plugins/python/python.o: plugins/python/python.c
 	$(CC) $(CFLAGS) $(PY_CFLAGS) -fPIC -c $< -o $@
 
 perl.so: plugins/perl/perl.o
-	$(CC) $< -shared -o $@ $(LDFLAGS) $(PERL_LDFLAGS)
+	$(CC) $< -shared -rdynamic -o $@ $(LDFLAGS) $(PERL_LDFLAGS)
 
 plugins/perl/perl.o: plugins/perl/perl.c $(PERL_HEADERS)
 	$(CC) $(CFLAGS) $(PERL_CFLAGS) -fPIC -c $< -o $@
