@@ -22,91 +22,18 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#ifdef ENABLE_NLS
-#include <locale.h>
-#endif
-#ifdef WIN32
-#include <windows.h>
-#else
 #include <dirent.h>
-#endif
 
 #undef PACKAGE
-#include "../../config.h"		  /* for #define OLD_PERL */
-#include "xchat-plugin.h"
+#include "../xchat-plugin.h"
+#include "../../src/common/version.h"
 
 static xchat_plugin *ph;		  /* plugin handle */
 
 static int perl_load_file (char *script_name);
 
-#ifdef WIN32
-/* STRINGIFY is from perl's CORE/config.h */
-#ifndef PERL_REQUIRED_VERSION
-	#define PERL_REQUIRED_VERSION STRINGIFY(PERL_REVISION) "." STRINGIFY(PERL_VERSION)
-#endif
-
-#ifndef PERL_DLL
-	#define PERL_DLL "perl" STRINGIFY(PERL_REVISION) STRINGIFY(PERL_VERSION) ".dll"
-#endif
-
-static DWORD
-child (char *str)
-{
-	MessageBoxA (0, str, "Perl DLL Error",
-					 MB_OK | MB_ICONHAND | MB_SETFOREGROUND | MB_TASKMODAL);
-	return 0;
-}
-
-static void
-thread_mbox (char *str)
-{
-	DWORD tid;
-
-	CloseHandle (CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) child,
-										str, 0, &tid));
-}
-
-#endif
-
 /* leave this before XSUB.h, to avoid readdir() being redefined */
 
-#ifdef WIN32
-static void
-perl_auto_load_from_path (const char *path)
-{
-	WIN32_FIND_DATA find_data;
-	HANDLE find_handle;
-	char *search_path;
-	int path_len = strlen (path);
-
-	/* +6 for \*.pl and \0 */
-	search_path = malloc(path_len + 6);
-	sprintf (search_path, "%s\\*.pl", path);
-
-	find_handle = FindFirstFile (search_path, &find_data);
-
-	if (find_handle != INVALID_HANDLE_VALUE)
-	{
-		do
-		{
-			if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
-				||find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))
-			{
-				char *full_path =
-					malloc (path_len + strlen (find_data.cFileName) + 2);
-				sprintf (full_path, "%s\\%s", path, find_data.cFileName);
-
-				perl_load_file (full_path);
-				free (full_path);
-			}
-		}
-		while (FindNextFile (find_handle, &find_data) != 0);
-		FindClose (find_handle);
-	}
-
-	free (search_path);
-}
-#else
 static void
 perl_auto_load_from_path (const char *path)
 {
@@ -127,17 +54,12 @@ perl_auto_load_from_path (const char *path)
 		closedir (dir);
 	}
 }
-#endif
 
 static int
 perl_auto_load (void *unused)
 {
 	const char *xdir;
 	char *sub_dir;
-#ifdef WIN32
-	int copied = 0;
-	char *slash = NULL;
-#endif
 
 	/* get the dir in local filesystem encoding (what opendir() expects!) */
 	xdir = xchat_get_info (ph, "xchatdirfs");
@@ -153,18 +75,6 @@ perl_auto_load (void *unused)
 	perl_auto_load_from_path (sub_dir);
 	free (sub_dir);
 
-#ifdef WIN32
-	/* autoload from  C:\program files\xchat\plugins\ */
-	sub_dir = malloc (1025 + 9);
-	copied = GetModuleFileName( 0, sub_dir, 1024 );
-	sub_dir[copied] = '\0';
-	slash = strrchr( sub_dir, '\\' );
-	if( slash != NULL ) {
-		*slash = '\0';
-	}
-	perl_auto_load_from_path ( strncat (sub_dir, "\\plugins", 9));
-	free (sub_dir);
-#endif
 	return 0;
 }
 
@@ -1042,20 +952,6 @@ XS (XS_Xchat_hook_fd)
 		flags = (int) SvIV (ST (2));
 		userdata = ST (3);
 		package = ST (4);
-		data = NULL;
-
-#ifdef WIN32
-		if ((flags & XCHAT_FD_NOTSOCKET) == 0) {
-			/* this _get_osfhandle if from win32iop.h in the perl distribution,
-			 *  not the one provided by Windows
-			 */ 
-			fd = _get_osfhandle(fd);
-			if (fd < 0) {
-				xchat_print(ph, "Invalid file descriptor");
-				XSRETURN_UNDEF;
-			}
-		}
-#endif
 
 		data = malloc (sizeof (HookData));
 		if (data == NULL) {
@@ -1391,46 +1287,6 @@ perl_init (void)
 static int
 perl_load_file (char *filename)
 {
-#ifdef WIN32
-	static HMODULE lib = NULL;
-
-	if (!lib) {
-		lib = LoadLibraryA (PERL_DLL);
-		if (!lib) {
-			if (GetLastError () == ERROR_BAD_EXE_FORMAT)
-				/* http://forum.xchat.org/viewtopic.php?t=3277 */
-				thread_mbox ("Cannot use this " PERL_DLL "\n\n"
-								 "32-bit ActivePerl is required.");
-			else {
-				/* a lot of people install this old version */
-				lib = LoadLibraryA ("perl56.dll");
-				if (lib) {
-					FreeLibrary (lib);
-					lib = NULL;
-					thread_mbox ("Cannot open " PERL_DLL "\n\n"
-									 "You must have either ActivePerl or Straberry Perl"
-									 PERL_REQUIRED_VERSION
-									 " installed in order to\n"
-									 "run perl scripts.\n\n"
-									 "I have found Perl 5.6, but that is too old.");
-				} else {
-					thread_mbox ("Cannot open " PERL_DLL "\n\n"
-									 "You must have either ActivePerl or Strawberry Perl "
-									 PERL_REQUIRED_VERSION " installed in order to\n"
-									 "run perl scripts.\n\n"
-									 "http://www.activestate.com/ActivePerl/\n"
-									 "http://strawberryperl.com/\n"
-									 "Make sure perl's bin directory is in your PATH.");
-				}
-			}
-			/* failure */
-			return FALSE;
-		}
-
-		/* success */
-		FreeLibrary (lib);
-	}
-#endif
 
 	if (my_perl == NULL) {
 		perl_init ();
