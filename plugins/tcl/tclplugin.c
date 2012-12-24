@@ -158,9 +158,9 @@ static int SourceInternalProc(int id, const char *args, const char *source)
     Tcl_MyDStringAppend(&ds, "proc ");
     Tcl_MyDStringAppend(&ds, InternalProcName(id));
     Tcl_MyDStringAppend(&ds, " { ");
-    Tcl_MyDStringAppend(&ds, args);
+    Tcl_MyDStringAppend(&ds, (char *) args);
     Tcl_MyDStringAppend(&ds, " } {\n");
-    Tcl_MyDStringAppend(&ds, source);
+    Tcl_MyDStringAppend(&ds, (char *) source);
     Tcl_MyDStringAppend(&ds, "\n}\n\n");
 
     result = Tcl_Eval(interp, ds.string);
@@ -179,7 +179,7 @@ static int EvalInternalProc(const char *procname, int ct, ...)
 
     Tcl_DStringInit(&ds);
 
-    Tcl_MyDStringAppend(&ds, procname);
+    Tcl_MyDStringAppend(&ds, (char *) procname);
 
     if (ct) {
         va_start(ap, ct);
@@ -206,7 +206,7 @@ static void DeleteInternalProc(const char *proc)
 
     Tcl_DStringInit(&ds);
     Tcl_MyDStringAppend(&ds, "rename ");
-    Tcl_MyDStringAppend(&ds, proc);
+    Tcl_MyDStringAppend(&ds, (char *) proc);
     Tcl_MyDStringAppend(&ds, " {}");
     Tcl_Eval(interp, ds.string);
     Tcl_DStringFree(&ds);
@@ -572,7 +572,7 @@ static int Print_Hook(char *word[], void *userdata)
     complete[complete_level].word = word;
 	complete[complete_level].word_eol = word;
 
-    if ((entry = Tcl_FindHashEntry(&cmdTablePtr, xc[(int) userdata].event)) != NULL) {
+    if ((entry = Tcl_FindHashEntry(&cmdTablePtr, xc[(intptr_t) userdata].event)) != NULL) {
 
         procList = Tcl_GetHashValue(entry);
 
@@ -587,21 +587,21 @@ static int Print_Hook(char *word[], void *userdata)
 
                 Tcl_DStringInit(&ds);
 
-                if ((int) userdata == CHAT) {
+                if ((intptr_t) userdata == CHAT) {
                     Tcl_DStringAppend(&ds, word[3], strlen(word[3]));
                     Tcl_DStringAppend(&ds, "!*@", 3);
                     Tcl_DStringAppend(&ds, word[1], strlen(word[1]));
-                    if (EvalInternalProc(proc_argv[1], 7, ds.string, word[2], xc[(int) userdata].event, word[4], "", proc_argv[0], "0") == TCL_ERROR) {
-                        xchat_printf(ph, "\0039TCL plugin\003\tERROR (on %s %s) ", xc[(int) userdata].event, proc_argv[0]);
+                    if (EvalInternalProc(proc_argv[1], 7, ds.string, word[2], xc[(intptr_t) userdata].event, word[4], "", proc_argv[0], "0") == TCL_ERROR) {
+                        xchat_printf(ph, "\0039TCL plugin\003\tERROR (on %s %s) ", xc[(intptr_t) userdata].event, proc_argv[0]);
                         NiceErrorInfo ();
                     }
                 } else {
-                    if (xc[(int) userdata].argc > 0) {
-                        for (x = 0; x <= xc[(int) userdata].argc; x++)
+                    if (xc[(intptr_t) userdata].argc > 0) {
+                        for (x = 0; x <= xc[(intptr_t) userdata].argc; x++)
                             Tcl_DStringAppendElement(&ds, word[x]);
                     }
-                    if (EvalInternalProc(proc_argv[1], 7, "", "", xc[(int) userdata].event, "", ds.string, proc_argv[0], "0") == TCL_ERROR) {
-                        xchat_printf(ph, "\0039Tcl plugin\003\tERROR (on %s %s) ", xc[(int) userdata].event, proc_argv[0]);
+                    if (EvalInternalProc(proc_argv[1], 7, "", "", xc[(intptr_t) userdata].event, "", ds.string, proc_argv[0], "0") == TCL_ERROR) {
+                        xchat_printf(ph, "\0039Tcl plugin\003\tERROR (on %s %s) ", xc[(intptr_t) userdata].event, proc_argv[0]);
                         NiceErrorInfo ();
                     }
                 }
@@ -767,7 +767,7 @@ static int tcl_on(ClientData cd, Tcl_Interp * irp, int argc, const char *argv[])
     char *token;
     int dummy;
     Tcl_DString ds;
-    int index;
+    size_t index;
     int count;
     int list_argc, proc_argc;
     int id;
@@ -1110,9 +1110,9 @@ static int tcl_info(ClientData cd, Tcl_Interp * irp, int argc, const char *argv[
     }
 
     if (id == NULL)
-      id = argv[argc-1];
+      id = (char *) argv[argc-1];
 
-    if ((result = xchat_get_info(ph, id)) == NULL)
+    if ((result = (char *) xchat_get_info(ph, id)) == NULL)
         result = "";
 
     Tcl_AppendResult(irp, result, NULL);
