@@ -79,6 +79,7 @@ clean:
 	rm -f $(PLUGINS)
 	rm -f plugins/perl/*.o
 	rm -f plugins/python/*.o
+	rm -f plugins/tcl/*.o
 
 $(PIXMAP): $(PNGS)
 	$(PIXMAPCONVERT) --raw --build-list $(PIXMAPLIST) > $(PIXMAP)
