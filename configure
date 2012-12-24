@@ -172,13 +172,23 @@ if [ -n "$tcl" ] ; then
 	TCL_CFLAGS=$(get_pkgconf_cflags tcl)
 	TCL_LDFLAGS=$(get_pkgconf_ldflags tcl)
 	tcl_error=
-	if [ -z "$TCL_LDFLAGS" ] ; then
+	# tcl 8.5 does not come with a pkgconfig file
+	# tcl 8.6. comes with a buggy one that fails to include its own library
+	# https://sourceforge.net/tracker/?func=detail&aid=3598298&group_id=10894&atid=110894
+	# hopefully tcl 8.7 will come with a *working* pkgconfig file ...
+	# until that happens, we need to fall back to its proprietary tclConfig system.
+	if [ -z "$TCL_LDFLAGS" ] || ! echo "$TCL_LDFLAGS" | grep "[-]ltcl" > /dev/null ; then
 		tcl_found=
-		for i in "$libdir"/tclConfig.sh "$prefix"/lib/tclConfig.sh "$prefix"/lib64/tclConfig.sh ; do
-			if [ -e "$i" ] ; then
-				. "$i"
+		for i in "$libdir" "$prefix"/lib/ "$prefix"/lib64/ /lib /lib64 /usr/lib /usr/lib64 ; do
+			printf "searching tclConfig.sh in $i ... "
+			if [ -e "$i"/tclConfig.sh ] ; then
+				. "$i"/tclConfig.sh
 				TCL_LDFLAGS="$TCL_LIB_SPEC $TCL_LIBS"
 				tcl_found=1
+				printf "SUCCESS\n"
+				break
+			else
+				printf "FAIL\n"
 			fi
 		done
 		if [ -z "$tcl_found" ] ; then
