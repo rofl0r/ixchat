@@ -27,16 +27,9 @@ static char RCSID[] = "$Id: tclplugin.c,v 1.65 2012/07/26 20:02:12 mooooooo Exp 
 #include <tcl.h>
 #include <tclDecls.h>
 #include <sys/stat.h>
-
-#ifdef WIN32
-#include <windows.h>
-#define bzero(mem, sz) memset((mem), 0, (sz))
-#define bcopy(src, dest, count) memmove((dest), (src), (count))
-#else
 #include <unistd.h>
-#endif
 
-#include "xchat-plugin.h"
+#include "../xchat-plugin.h"
 #include "tclplugin.h"
 #include "printevents.h"
 
@@ -2210,22 +2203,9 @@ static void banner()
 
 int xchat_plugin_init(xchat_plugin * plugin_handle, char **plugin_name, char **plugin_desc, char **plugin_version, char *arg)
 {
-#ifdef WIN32
-    HINSTANCE lib;
-#endif
-
     strncpy(VERSION, &RCSID[19], 5);
 
     ph = plugin_handle;
-
-#ifdef WIN32
-    lib = LoadLibraryA(TCL_DLL);
-    if (!lib) {
-        xchat_print(ph, "You must have ActiveTCL installed in order to run Tcl scripts.\n" "http://aspn.activestate.com/ASPN/Tcl/\n" "Make sure Tcl's bin directory is in your PATH.\n\n");
-        return 0;
-    }
-    FreeLibrary(lib);
-#endif
 
     if (initialized != 0) {
         banner();
