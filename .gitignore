@@ -1,0 +1,10 @@
+*.o
+*.a
+*.so
+*.lo
+*.out
+*.rcb
+src/pixmaps/inline_pngs.h
+plugins/perl/irc.pm.h
+plugins/perl/xchat.pm.h
+
