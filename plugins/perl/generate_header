@@ -2,6 +2,11 @@
 
 use strict;
 use warnings;
+use File::Basename;
+use Cwd 'abs_path';
+
+my $dir = dirname(abs_path($0));
+
 
 sub header {
   my $file = shift;
@@ -25,15 +30,17 @@ sub toc {
 }
 
 for my $files (
-	[ "xchat.pm.h",         # output file
-		"lib/Xchat.pm",      # input files
-		"lib/Xchat/Embed.pm",
-		"lib/Xchat/List/Network.pm",
-		"lib/Xchat/List/Network/Entry.pm",
-		"lib/Xchat/List/Network/AutoJoin.pm",
+	[ 
+		$dir . "/xchat.pm.h",         # output file
+		$dir . "/lib/Xchat.pm",      # input files
+		$dir . "/lib/Xchat/Embed.pm",
+		$dir . "/lib/Xchat/List/Network.pm",
+		$dir . "/lib/Xchat/List/Network/Entry.pm",
+		$dir . "/lib/Xchat/List/Network/AutoJoin.pm",
 	],
-	[ "irc.pm.h",   # output file
-		"lib/IRC.pm" # input file
+	[ 
+		$dir . "/irc.pm.h",   # output file
+		$dir . "/lib/IRC.pm" # input file
 	]
 ) {
 	my ($output,@inputs) = @$files;
