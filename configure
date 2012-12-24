@@ -134,6 +134,7 @@ use_plugin=
 
 perl=$(check_program "perl" 0)
 if [ -n "$perl" ] ; then
+	printf "perl detected, plugin activated\n"
 	PERL_CFLAGS=`$perl -MExtUtils::Embed -e ccopts 2>/dev/null`
 	PERL_LDFLAGS=`$perl -MExtUtils::Embed -e ldopts 2>/dev/null | sed 's/-lgdbm //'`
 	add_config "PERL_CFLAGS = $PERL_CFLAGS"
@@ -149,6 +150,11 @@ fi
 
 python=$(check_program "python" 0)
 if [ -n "$python" ] ; then
+	printf "python detected, plugin activated\n"
+	printf "WARNING: python plugin needs environment variable PYTHONHOME set to python's prefix\n"
+	printf "  lack of that environment variable will cause xchat exitting when the plugin is loaded\n"
+	printf "  on sabotage linux, use \"PYTHONHOME=/ ixchat\" to launch the program.\n"
+
 	PY_CFLAGS=$(get_pkgconf_cflags python)
 	PY_LDFLAGS=$(get_pkgconf_ldflags python)
 	add_config "PY_CFLAGS = $PY_CFLAGS"
@@ -162,6 +168,7 @@ fi
 
 tcl=$(check_program "tclsh" 0)
 if [ -n "$tcl" ] ; then
+	printf "tcl detected, plugin activated\n"
 	TCL_CFLAGS=$(get_pkgconf_cflags tcl)
 	TCL_LDFLAGS=$(get_pkgconf_ldflags tcl)
 	tcl_error=
