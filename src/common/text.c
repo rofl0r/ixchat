@@ -1982,7 +1982,8 @@ text_emit (int index, session *sess, char *a, char *b, char *c, char *d, char* f
 	unsigned int stripcolor_args = (prefs.stripcolor ? 0xFFFFFFFF : 0);
 	char tbuf[NICKLEN + 4];
 
-	dprintf(2, "%s:%d %s %s %s %s\n", file, lineno, a ? a : "", b ? b : "", c ? c : "", d ? d : "");
+	if(getenv("XCHATDEBUG"))
+		dprintf(2, "%s:%d %s %s %s %s\n", file, lineno, a ? a : "", b ? b : "", c ? c : "", d ? d : "");
 
 	if (prefs.colorednicks && (index == XP_TE_CHANACTION || index == XP_TE_CHANMSG))
 	{
