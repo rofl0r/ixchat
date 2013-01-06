@@ -153,18 +153,40 @@ fi
 python=$(check_program "python" 0)
 if [ -n "$python" ] ; then
 	printf "python detected, plugin activated\n"
-	printf "WARNING: python plugin needs environment variable PYTHONHOME set to python's prefix\n"
-	printf "  lack of that environment variable will cause xchat exitting when the plugin is loaded\n"
-	printf "  on sabotage linux, use \"PYTHONHOME=/ ixchat\" to launch the program.\n"
+	printf "WARNING: python plugin needs environment variable PYTHONHOME\n"
+	printf "  set to python's prefix.\n"
+	printf "  lack of that environment variable will cause xchat exitting\n"
+	printf "  when the plugin is loaded.\n"
+	printf "  on sabotage linux, use \"PYTHONHOME=/ ixchat\"\n"
+	printf "  to launch the program.\n"
 
 	PY_CFLAGS=$(get_pkgconf_cflags python)
+	[ -z "$PY_CFLAGS" ] && PY_CFLAGS=$(get_pkgconf_cflags python-2.7)
+	if  [ -z "$PY_CFLAGS" ] ; then
+		for i in "$prefix" /usr /usr/local/ ; do
+			printf "searching Python.h in $i/include/python2.7 ... "
+                        if [ -e "$i"/include/python2.7/Python.h ] ; then
+				PY_CFLAGS=-I"$i"/include/python2.7
+				printf "SUCCESS\n"
+				break;
+			else
+				printf "FAIL\n"
+			fi
+		done
+	fi
 	PY_LDFLAGS=$(get_pkgconf_ldflags python)
-	add_config "PY_CFLAGS = $PY_CFLAGS"
-	add_config "PY_LDFLAGS = $PY_LDFLAGS"
-	add_config "PLUGINS += python.so"
-	if [ -z "$use_plugin" ] ; then
-		add_cflags "-DUSE_PLUGIN"
-		use_plugin=1
+	[ -z "$PY_LDFLAGS" ] && PY_LDFLAGS=$(get_pkgconf_ldflags python-2.7)
+	[ -z "$PY_LDFLAGS" ] && PY_LDFLAGS=-lpython2.7
+	if [ ! -z "$PY_CFLAGS" ] ; then
+		add_config "PY_CFLAGS = $PY_CFLAGS"
+		add_config "PY_LDFLAGS = $PY_LDFLAGS"
+		add_config "PLUGINS += python.so"
+		if [ -z "$use_plugin" ] ; then
+			add_cflags "-DUSE_PLUGIN"
+			use_plugin=1
+		fi
+	else
+		printf "python not found, skipping plugin\n"
 	fi
 fi
 
