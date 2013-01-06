@@ -240,6 +240,21 @@ if [ -n "$tcl" ] ; then
 	fi
 fi
 
+for i in libsexy gtkspell-2.0 ; do
+	spell_flags=$(get_pkgconf_cflags $i)
+	if [ ! -z "$spell_flags" ] ; then
+		add_cflags "$spell_flags"
+		spell_flags=$(get_pkgconf_ldflags $i)
+		add_ldflags "$spell_flags"
+		if [ "$i" = "libsexy" ] ; then
+			add_cflags "-DUSE_LIBSEXY"
+		else
+			add_cflags "-DUSE_GTKSPELL"
+		fi
+		break
+	fi
+done
+
 if isbsd || ismac ; then
 	add_config "INSTALL_FLAGS=-m"
 fi
