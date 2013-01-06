@@ -74,6 +74,14 @@ usage() {
 	exit 1
 }
 
+ismac() {
+	uname -s | grep Darwin >/dev/null
+}
+
+isbsd() {
+	uname -s | grep BSD >/dev/null
+}
+
 spliteq() {
 	arg=$1
 	echo "${arg#*=}"
@@ -230,6 +238,10 @@ if [ -n "$tcl" ] ; then
 			use_plugin=1
 		fi
 	fi
+fi
+
+if isbsd || ismac ; then
+	add_config "INSTALL_FLAGS=-m"
 fi
 
 

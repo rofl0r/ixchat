@@ -36,6 +36,8 @@ PIXMAPLIST = traymsgpng $(pixsrcdir)/message.png \
 
 PERL_HEADERS = plugins/perl/irc.pm.h plugins/perl/xchat.pm.h
 
+INSTALL_FLAGS=-D -m
+
 -include config.mak
 
 all: $(ALL_TOOLS) $(PLUGINS)
@@ -45,7 +47,8 @@ install: $(ALL_TOOLS:%=$(DESTDIR)$(bindir)/%) install-plugins
 install-plugins: $(PLUGINS:%=$(DESTDIR)$(libdir)/xchat/plugins/%)
 
 $(DESTDIR)$(libdir)/xchat/plugins/%: %
-	install -D $< $@
+	install -d $(DESTDIR)$(libdir)/xchat/plugins
+	install $(INSTALL_FLAGS) 644 $< $@
 
 $(PERL_HEADERS):
 	plugins/perl/generate_header
@@ -88,9 +91,10 @@ $(PIXMAP): $(PNGS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(DESTDIR)$(bindir)/%: %
-	install -D $< $@
+	install -d $(DESTDIR)$(bindir)
+	install $(INSTALL_FLAGS) 755 $< $@
 
 $(DESTDIR)$(prefix)/%: %
-	install -D -m 644 $< $@
+	install $(INSTALL_FLAGS) 644 $< $@
 
 .PHONY: all clean install
