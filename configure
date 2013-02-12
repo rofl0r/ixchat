@@ -9,7 +9,7 @@ gtk+-x11-2.0
 EOF
 `
 clear_config() {
-	rm config.mak
+	rm -f config.mak 2>/dev/null
 }
 
 add_config() {
