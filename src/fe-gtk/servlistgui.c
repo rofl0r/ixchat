@@ -48,13 +48,8 @@
 static GtkWidget *serverlist_win = NULL;
 static GtkWidget *networks_tree;	/* network TreeView */
 static int ignore_changed = FALSE;
-#ifdef WIN32
-static int win_width = 324;
-static int win_height = 426;
-#else
 static int win_width = 364;
 static int win_height = 478;
-#endif
 
 /* global user info */
 static GtkWidget *entry_nick1;

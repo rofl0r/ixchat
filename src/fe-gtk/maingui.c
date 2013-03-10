@@ -214,44 +214,6 @@ mg_create_tab_colors (void)
 	away_list = mg_attr_list_create (&colors[COL_AWAY], FALSE);
 }
 
-#ifdef WIN32
-#define WINVER 0x0501	/* needed for vc6? */
-#include <windows.h>
-#include <gdk/gdkwin32.h>
-
-/* Flash the taskbar button on Windows when there's a highlight event. */
-
-static void
-flash_window (GtkWidget *win)
-{
-	FLASHWINFO fi;
-	static HMODULE user = NULL;
-	static BOOL (*flash) (PFLASHWINFO) = NULL;
-
-	if (!user)
-	{
-		user = GetModuleHandleA ("USER32");
-		if (!user)
-			return;	/* this should never fail */
-	}
-
-	if (!flash)
-	{
-		flash = (void *)GetProcAddress (user, "FlashWindowEx");
-		if (!flash)
-			return;	/* this fails on NT4.0 and Win95 */
-	}
-
-	fi.cbSize = sizeof (fi);
-	fi.hwnd = GDK_WINDOW_HWND (win->window);
-	fi.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG;
-	fi.uCount = 0;
-	fi.dwTimeout = 500;
-	flash (&fi);
-	/*FlashWindowEx (&fi);*/
-}
-#else
-
 #ifdef USE_XLIB
 #include <gdk/gdkx.h>
 
@@ -282,14 +244,13 @@ unflash_window (GtkWidget *win)
 	set_window_urgency (win, FALSE);
 }
 #endif
-#endif
 
 /* flash the taskbar button */
 
 void
 fe_flash_window (session *sess)
 {
-#if defined(WIN32) || defined(USE_XLIB)
+#if defined(USE_XLIB)
 	if (fe_gui_info (sess, 0) != 1)	/* only do it if not focused */
 		flash_window (sess->gui->window);
 #endif
@@ -2443,7 +2404,6 @@ mg_create_textarea (session *sess, GtkWidget *box)
 
 	gui->vscrollbar = gtk_vscrollbar_new (GTK_XTEXT (xtext)->adj);
 	gtk_box_pack_start (GTK_BOX (inbox), gui->vscrollbar, FALSE, TRUE, 0);
-#ifndef WIN32	/* needs more work */
 	gtk_drag_dest_set (gui->vscrollbar, 5, dnd_dest_targets, 2,
 							 GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_LINK);
 	g_signal_connect (G_OBJECT (gui->vscrollbar), "drag_begin",
@@ -2459,7 +2419,6 @@ mg_create_textarea (session *sess, GtkWidget *box)
 							 GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_LINK);
 	g_signal_connect (G_OBJECT (gui->xtext), "drag_data_received",
 							G_CALLBACK (mg_dialog_dnd_drop), NULL);
-#endif
 }
 
 static GtkWidget *
@@ -2497,11 +2456,7 @@ mg_create_meters (session_gui *gui, GtkWidget *parent_box)
 	if (prefs.lagometer & 1)
 	{
 		gui->lagometer = wid = gtk_progress_bar_new ();
-#ifdef WIN32
-		gtk_widget_set_size_request (wid, 1, 10);
-#else
 		gtk_widget_set_size_request (wid, 1, 8);
-#endif
 
 		wid = gtk_event_box_new ();
 		gtk_container_add (GTK_CONTAINER (wid), gui->lagometer);
@@ -2516,11 +2471,7 @@ mg_create_meters (session_gui *gui, GtkWidget *parent_box)
 	if (prefs.throttlemeter & 1)
 	{
 		gui->throttlemeter = wid = gtk_progress_bar_new ();
-#ifdef WIN32
-		gtk_widget_set_size_request (wid, 1, 10);
-#else
 		gtk_widget_set_size_request (wid, 1, 8);
-#endif
 
 		wid = gtk_event_box_new ();
 		gtk_container_add (GTK_CONTAINER (wid), gui->throttlemeter);
@@ -2973,10 +2924,8 @@ mg_tabwin_focus_cb (GtkWindow * win, GdkEventFocus *event, gpointer userdata)
 		gtk_xtext_check_marker_visibility (GTK_XTEXT (current_sess->gui->xtext));
 		plugin_emit_dummy_print (current_sess, "Focus Window");
 	}
-#ifndef WIN32
 #ifdef USE_XLIB
 	unflash_window (GTK_WIDGET (win));
-#endif
 #endif
 	return FALSE;
 }
@@ -2988,10 +2937,8 @@ mg_topwin_focus_cb (GtkWindow * win, GdkEventFocus *event, session *sess)
 	if (!sess->server->server_session)
 		sess->server->server_session = sess;
 	gtk_xtext_check_marker_visibility(GTK_XTEXT (current_sess->gui->xtext));
-#ifndef WIN32
 #ifdef USE_XLIB
 	unflash_window (GTK_WIDGET (win));
-#endif
 #endif
 	plugin_emit_dummy_print (sess, "Focus Window");
 	return FALSE;
@@ -3675,7 +3622,6 @@ mg_is_gui_target (GdkDragContext *context)
 gboolean
 mg_drag_begin_cb (GtkWidget *widget, GdkDragContext *context, gpointer userdata)
 {
-#ifndef WIN32	/* leaks GDI pool memory - don't use on win32 */
 	int width, height;
 	GdkColormap *cmap;
 	GdkPixbuf *pix, *pix2;
@@ -3693,7 +3639,6 @@ mg_drag_begin_cb (GtkWidget *widget, GdkDragContext *context, gpointer userdata)
 
 	gtk_drag_set_icon_pixbuf (context, pix2, 0, 0);
 	g_object_set_data (G_OBJECT (widget), "ico", pix2);
-#endif
 
 	return TRUE;
 }
@@ -3705,9 +3650,7 @@ mg_drag_end_cb (GtkWidget *widget, GdkDragContext *context, gpointer userdata)
 	if (!mg_is_gui_target (context))
 		return;
 
-#ifndef WIN32
 	g_object_unref (g_object_get_data (G_OBJECT (widget), "ico"));
-#endif
 }
 
 /* drop complete */

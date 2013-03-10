@@ -160,11 +160,7 @@ ctcp_handle (session *sess, char *to, char *nick, char *ip,
 			}
 
 			/* don't let IRCers specify path */
-#ifdef WIN32
-			if (strchr (word[5], '/') == NULL && strchr (word[5], '\\') == NULL)
-#else
 			if (strchr (word[5], '/') == NULL)
-#endif
 				sound_play (word[5], TRUE);
 			return;
 		}

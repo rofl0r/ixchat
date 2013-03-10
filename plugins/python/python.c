@@ -389,9 +389,6 @@ Util_Autoload()
 	Util_Autoload_from(sub_dir);
 	free (sub_dir);
 
-#ifdef WIN32	/* also auto-load C:\Program Files\XChat\Plugins\*.py */
-	Util_Autoload_from(XCHATLIBDIR"/plugins");
-#endif
 }
 
 static char *

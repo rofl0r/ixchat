@@ -27,10 +27,8 @@
 #define WANTSOCKET
 #include "inet.h"
 
-#ifndef WIN32
 #include <sys/wait.h>
 #include <signal.h>
-#endif
 
 #include "xchat.h"
 #include "fe.h"
@@ -413,7 +411,6 @@ new_ircwindow (server *serv, char *name, int type, int focus)
 static void
 exec_notify_kill (session * sess)
 {
-#ifndef WIN32
 	struct nbexec *re;
 	if (sess->running_exec != NULL)
 	{
@@ -427,7 +424,6 @@ exec_notify_kill (session * sess)
 			free(re->linebuf);
 		free (re);
 	}
-#endif
 }
 
 static void
@@ -653,20 +649,6 @@ xchat_init (void)
 	char buf[3068];
 	const char *cs = NULL;
 
-#ifdef WIN32
-	WSADATA wsadata;
-
-#ifdef USE_IPV6
-	if (WSAStartup(0x0202, &wsadata) != 0)
-	{
-		MessageBox (NULL, "Cannot find winsock 2.2+", "Error", MB_OK);
-		exit (0);
-	}
-#else
-	WSAStartup(0x0101, &wsadata);
-#endif	/* !USE_IPV6 */
-#endif	/* !WIN32 */
-
 #ifdef USE_SIGACTION
 	struct sigaction act;
 
@@ -687,10 +669,8 @@ xchat_init (void)
 	sigemptyset (&act.sa_mask);
 	sigaction (SIGUSR2, &act, NULL);
 #else
-#ifndef WIN32
 	/* good enough for these old systems */
 	signal (SIGPIPE, SIG_IGN);
-#endif
 #endif
 
 	if (g_get_charset (&cs))
@@ -857,8 +837,6 @@ xchat_exit (void)
 	fe_exit ();
 }
 
-#ifndef WIN32
-
 static int
 child_handler (gpointer userdata)
 {
@@ -869,34 +847,24 @@ child_handler (gpointer userdata)
 	return 1;						  /* keep the timeout handler */
 }
 
-#endif
-
 void
 xchat_exec (const char *cmd)
 {
-#ifdef WIN32
-	util_exec (cmd);
-#else
 	int pid = util_exec (cmd);
 	if (pid != -1)
 	/* zombie avoiding system. Don't ask! it has to be like this to work
-      with zvt (which overrides the default handler) */
+	   with zvt (which overrides the default handler) */
 		fe_timeout_add (1000, child_handler, GINT_TO_POINTER (pid));
-#endif
 }
 
 void
 xchat_execv (char * const argv[])
 {
-#ifdef WIN32
-	util_execv (argv);
-#else
 	int pid = util_execv (argv);
 	if (pid != -1)
 	/* zombie avoiding system. Don't ask! it has to be like this to work
-      with zvt (which overrides the default handler) */
+	   with zvt (which overrides the default handler) */
 		fe_timeout_add (1000, child_handler, GINT_TO_POINTER (pid));
-#endif
 }
 
 int
@@ -941,10 +909,6 @@ main (int argc, char *argv[])
 
 #ifdef USE_DEBUG
 	xchat_mem_list ();
-#endif
-
-#ifdef WIN32
-	WSACleanup ();
 #endif
 
 	return 0;

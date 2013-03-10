@@ -292,43 +292,9 @@ void
 xchat_free (xchat_plugin *ph,
 	    void *ptr);
 
-#if !defined(PLUGIN_C) && defined(WIN32)
-#ifndef XCHAT_PLUGIN_HANDLE
-#define XCHAT_PLUGIN_HANDLE (ph)
-#endif
-#define xchat_hook_command ((XCHAT_PLUGIN_HANDLE)->xchat_hook_command)
-#define xchat_hook_server ((XCHAT_PLUGIN_HANDLE)->xchat_hook_server)
-#define xchat_hook_print ((XCHAT_PLUGIN_HANDLE)->xchat_hook_print)
-#define xchat_hook_timer ((XCHAT_PLUGIN_HANDLE)->xchat_hook_timer)
-#define xchat_hook_fd ((XCHAT_PLUGIN_HANDLE)->xchat_hook_fd)
-#define xchat_unhook ((XCHAT_PLUGIN_HANDLE)->xchat_unhook)
-#define xchat_print ((XCHAT_PLUGIN_HANDLE)->xchat_print)
-#define xchat_printf ((XCHAT_PLUGIN_HANDLE)->xchat_printf)
-#define xchat_command ((XCHAT_PLUGIN_HANDLE)->xchat_command)
-#define xchat_commandf ((XCHAT_PLUGIN_HANDLE)->xchat_commandf)
-#define xchat_nickcmp ((XCHAT_PLUGIN_HANDLE)->xchat_nickcmp)
-#define xchat_set_context ((XCHAT_PLUGIN_HANDLE)->xchat_set_context)
-#define xchat_find_context ((XCHAT_PLUGIN_HANDLE)->xchat_find_context)
-#define xchat_get_context ((XCHAT_PLUGIN_HANDLE)->xchat_get_context)
-#define xchat_get_info ((XCHAT_PLUGIN_HANDLE)->xchat_get_info)
-#define xchat_get_prefs ((XCHAT_PLUGIN_HANDLE)->xchat_get_prefs)
-#define xchat_list_get ((XCHAT_PLUGIN_HANDLE)->xchat_list_get)
-#define xchat_list_free ((XCHAT_PLUGIN_HANDLE)->xchat_list_free)
-#define xchat_list_fields ((XCHAT_PLUGIN_HANDLE)->xchat_list_fields)
-#define xchat_list_str ((XCHAT_PLUGIN_HANDLE)->xchat_list_str)
-#define xchat_list_int ((XCHAT_PLUGIN_HANDLE)->xchat_list_int)
-#define xchat_list_time ((XCHAT_PLUGIN_HANDLE)->xchat_list_time)
-#define xchat_list_next ((XCHAT_PLUGIN_HANDLE)->xchat_list_next)
-#define xchat_plugingui_add ((XCHAT_PLUGIN_HANDLE)->xchat_plugingui_add)
-#define xchat_plugingui_remove ((XCHAT_PLUGIN_HANDLE)->xchat_plugingui_remove)
-#define xchat_emit_print ((XCHAT_PLUGIN_HANDLE)->xchat_emit_print)
-#define xchat_gettext ((XCHAT_PLUGIN_HANDLE)->xchat_gettext)
-#define xchat_send_modes ((XCHAT_PLUGIN_HANDLE)->xchat_send_modes)
-#define xchat_strip ((XCHAT_PLUGIN_HANDLE)->xchat_strip)
-#define xchat_free ((XCHAT_PLUGIN_HANDLE)->xchat_free)
-#endif
 
 #ifdef __cplusplus
 }
 #endif
+
 #endif

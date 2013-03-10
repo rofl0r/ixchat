@@ -124,7 +124,7 @@ int xtext_get_stamp_str (time_t, char **);
 #endif
 static void gtk_xtext_render_page (GtkXText * xtext);
 static void gtk_xtext_calc_lines (xtext_buffer *buf, int);
-#if defined(USE_XLIB) || defined(WIN32)
+#if defined(USE_XLIB)
 static void gtk_xtext_load_trans (GtkXText * xtext);
 static void gtk_xtext_free_trans (GtkXText * xtext);
 #endif
@@ -553,21 +553,13 @@ backend_draw_text (GtkXText *xtext, int dofill, GdkGC *gc, int x, int y,
 
 	if (dofill)
 	{
-#ifdef WIN32
-		if (xtext->transparent && !xtext->backcolor)
-			win32_draw_bg (xtext, x, y - xtext->font->ascent, str_width,
-								xtext->fontsize);
-		else
-#endif
-		{
-			gdk_gc_get_values (gc, &val);
-			col.pixel = val.background.pixel;
-			gdk_gc_set_foreground (gc, &col);
-			gdk_draw_rectangle (xtext->draw_buf, gc, 1, x, y -
-									  xtext->font->ascent, str_width, xtext->fontsize);
-			col.pixel = val.foreground.pixel;
-			gdk_gc_set_foreground (gc, &col);
-		}
+		gdk_gc_get_values (gc, &val);
+		col.pixel = val.background.pixel;
+		gdk_gc_set_foreground (gc, &col);
+		gdk_draw_rectangle (xtext->draw_buf, gc, 1, x, y -
+		                    xtext->font->ascent, str_width, xtext->fontsize);
+		col.pixel = val.foreground.pixel;
+		gdk_gc_set_foreground (gc, &col);
 	}
 
 	line = pango_layout_get_lines (xtext->layout)->data;
@@ -816,7 +808,7 @@ gtk_xtext_destroy (GtkObject * object)
 
 	if (xtext->pixmap)
 	{
-#if defined(USE_XLIB) || defined(WIN32)
+#if defined(USE_XLIB)
 		if (xtext->transparent)
 			gtk_xtext_free_trans (xtext);
 		else
@@ -990,7 +982,7 @@ gtk_xtext_realize (GtkWidget * widget)
 	/* draw directly to window */
 	xtext->draw_buf = widget->window;
 
-#if defined(USE_XLIB) || defined(WIN32)
+#if defined(USE_XLIB)
 	if (xtext->transparent)
 	{
 		gtk_xtext_load_trans (xtext);
@@ -1052,7 +1044,7 @@ gtk_xtext_size_allocate (GtkWidget * widget, GtkAllocation * allocation)
 			xtext->buffer->pagetop_ent = NULL;
 			gtk_xtext_adjustment_set (xtext->buffer, FALSE);
 		}
-#if defined(USE_XLIB) || defined(WIN32)
+#if defined(USE_XLIB)
 		if (do_trans && xtext->transparent && xtext->shaded)
 		{
 			gtk_xtext_free_trans (xtext);
@@ -1316,7 +1308,7 @@ gtk_xtext_paint (GtkWidget *widget, GdkRectangle *area)
 	textentry *ent_start, *ent_end;
 	int x, y;
 
-#if defined(USE_XLIB) || defined(WIN32)
+#if defined(USE_XLIB)
 	if (xtext->transparent)
 	{
 		gdk_window_get_origin (widget->window, &x, &y);
@@ -1325,7 +1317,6 @@ gtk_xtext_paint (GtkWidget *widget, GdkRectangle *area)
 		{
 			xtext->last_win_x = x;
 			xtext->last_win_y = y;
-#ifndef WIN32
 #ifdef USE_SHM
 			if (xtext->shaded && !have_shm_pixmaps(GDK_WINDOW_XDISPLAY (xtext->draw_buf)))
 #else
@@ -1336,7 +1327,6 @@ gtk_xtext_paint (GtkWidget *widget, GdkRectangle *area)
 				gtk_xtext_load_trans (xtext);
 				xtext->recycle = FALSE;
 			} else
-#endif
 			{
 				gtk_xtext_free_trans (xtext);
 				gtk_xtext_load_trans (xtext);
@@ -1361,7 +1351,7 @@ gtk_xtext_paint (GtkWidget *widget, GdkRectangle *area)
 		goto xit;
 	}
 	ent_end = gtk_xtext_find_char (xtext, area->x + area->width,
-											 area->y + area->height, NULL, NULL);
+	                               area->y + area->height, NULL, NULL);
 	if (!ent_end)
 		ent_end = xtext->buffer->text_last;
 
@@ -2231,10 +2221,8 @@ gtk_xtext_button_press (GtkWidget * widget, GdkEventButton * event)
 static gboolean
 gtk_xtext_selection_kill (GtkXText *xtext, GdkEventSelection *event)
 {
-#ifndef WIN32
 	if (xtext->buffer->last_ent_start)
 		gtk_xtext_unselect (xtext);
-#endif
 	return TRUE;
 }
 
@@ -3566,7 +3554,7 @@ shade_pixmap (GtkXText * xtext, Pixmap p, int x, int y, int w, int h)
 #endif /* !USE_XLIB */
 
 /* free transparency xtext->pixmap */
-#if defined(USE_XLIB) || defined(WIN32)
+#if defined(USE_XLIB)
 
 static void
 gtk_xtext_free_trans (GtkXText * xtext)
