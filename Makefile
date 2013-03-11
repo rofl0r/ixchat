@@ -9,8 +9,12 @@ prefix = /usr/local/
 includedir = $(prefix)/include
 libdir = $(prefix)/lib
 
-SRCS = $(sort $(wildcard src/common/*.c src/fe-gtk/*.c))
+SRCS = $(sort $(wildcard src/common/*.c))
+SRCS_FE_GTK = $(sort $(wildcard src/fe-gtk/*.c))
+SRCS_FE_TEXT = $(sort $(wildcard src/fe-text/*.c))
 OBJS = $(SRCS:.c=.o)
+OBJS_FE_GTK  = $(SRCS_FE_GTK:.c=.o)
+OBJS_FE_TEXT = $(SRCS_FE_TEXT:.c=.o)
 
 CFLAGS += -Os 
 
@@ -71,11 +75,16 @@ perl.so: plugins/perl/perl.o
 plugins/perl/perl.o: plugins/perl/perl.c $(PERL_HEADERS)
 	$(CC) $(CFLAGS) $(PERL_CFLAGS) -fPIC -c $< -o $@
 
-ixchat: $(OBJS)
-	$(CC) $(LDFLAGS) -o ixchat $(OBJS)
+ixchat: $(OBJS) $(OBJS_FE_GTK)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(OBJS_FE_GTK)
+
+ixchat-text: $(OBJS) $(OBJS_FE_TEXT)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(OBJS_FE_TEXT)
 
 clean:
 	rm -f $(OBJS)
+	rm -f $(OBJS_FE_GTK)
+	rm -f $(OBJS_FE_TEXT)
 	rm -f $(PIXMAP)
 	rm -f $(ALL_TOOLS)
 	rm -f $(PERL_HEADERS)
