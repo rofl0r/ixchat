@@ -39,6 +39,12 @@ PIXMAPLIST = traymsgpng $(pixsrcdir)/message.png \
              xchatpng $(pixsrcdir)/../../xchat.png
 
 PERL_HEADERS = plugins/perl/irc.pm.h plugins/perl/xchat.pm.h
+PERL_HEADERS_INPUT = plugins/perl/lib/IRC.pm \
+                     plugins/perl/lib/Xchat.pm \
+                     plugins/perl/lib/Xchat/Embed.pm \
+                     plugins/perl/lib/Xchat/List/Network.pm \
+                     plugins/perl/lib/Xchat/List/Network/Entry.pm\
+                     plugins/perl/lib/Xchat/List/Network/AutoJoin.pm
 
 INSTALL_FLAGS=-D -m
 
@@ -54,7 +60,7 @@ $(DESTDIR)$(libdir)/xchat/plugins/%: %
 	install -d $(DESTDIR)$(libdir)/xchat/plugins
 	install $(INSTALL_FLAGS) 644 $< $@
 
-$(PERL_HEADERS):
+$(PERL_HEADERS): $(PERL_HEADERS_INPUT)
 	plugins/perl/generate_header
 
 tcl.so: plugins/tcl/tcl.o
