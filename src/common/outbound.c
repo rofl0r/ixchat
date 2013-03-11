@@ -1441,7 +1441,6 @@ exec_check_process (struct session *sess)
 	}
 }
 
-#ifndef __EMX__
 static int
 cmd_execs (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 {
@@ -1521,7 +1520,6 @@ cmd_execw (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 
 	return TRUE;
 }
-#endif /* !__EMX__ */
 
 /* convert ANSI escape color codes to mIRC codes */
 
@@ -1757,21 +1755,11 @@ cmd_exec (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 			}
 		}
 
-#ifdef __EMX__						  /* if os/2 */
-		if (pipe (fds) < 0)
-		{
-			PrintText (sess, "Pipe create error\n");
-			return FALSE;
-		}
-		setmode (fds[0], O_BINARY);
-		setmode (fds[1], O_BINARY);
-#else
 		if (socketpair (PF_UNIX, SOCK_STREAM, 0, fds) == -1)
 		{
 			PrintText (sess, "socketpair(2) failed\n");
 			return FALSE;
 		}
-#endif
 		s = (struct nbexec *) malloc (sizeof (struct nbexec));
 		memset(s, 0, sizeof(*s));
 		s->myfd = fds[0];
@@ -3498,15 +3486,11 @@ const struct commands xc_cmds[] = {
 	{"ECHO", cmd_echo, 0, 0, 1, N_("ECHO <text>, Prints text locally")},
 	{"EXEC", cmd_exec, 0, 0, 1,
 	 N_("EXEC [-o] <command>, runs the command. If -o flag is used then output is sent to current channel, else is printed to current text box")},
-#ifndef __EMX__
 	{"EXECCONT", cmd_execc, 0, 0, 1, N_("EXECCONT, sends the process SIGCONT")},
-#endif
 	{"EXECKILL", cmd_execk, 0, 0, 1,
 	 N_("EXECKILL [-9], kills a running exec in the current session. If -9 is given the process is SIGKILL'ed")},
-#ifndef __EMX__
 	{"EXECSTOP", cmd_execs, 0, 0, 1, N_("EXECSTOP, sends the process SIGSTOP")},
 	{"EXECWRITE", cmd_execw, 0, 0, 1, N_("EXECWRITE, sends data to the processes stdin")},
-#endif
 	{"FLUSHQ", cmd_flushq, 0, 0, 1,
 	 N_("FLUSHQ, flushes the current server's send queue")},
 	{"GATE", cmd_gate, 0, 0, 1,
