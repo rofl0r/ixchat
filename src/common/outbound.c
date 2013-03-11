@@ -2430,11 +2430,7 @@ cmd_load (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 
 #ifdef USE_PLUGIN
 	len = strlen (word[2]);
-#if defined(__hpux)
-	if (len > 3 && strcasecmp (".sl", word[2] + len - 3) == 0)
-#else
 	if (len > 3 && strcasecmp (".so", word[2] + len - 3) == 0)
-#endif
 	{
 		arg = NULL;
 		if (word_eol[3][0])
@@ -3175,11 +3171,7 @@ cmd_unload (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 	int len, by_file = FALSE;
 
 	len = strlen (word[2]);
-#if defined(__hpux)
-	if (len > 3 && strcasecmp (word[2] + len - 3, ".sl") == 0)
-#else
 	if (len > 3 && strcasecmp (word[2] + len - 3, ".so") == 0)
-#endif
 		by_file = TRUE;
 
 	switch (plugin_kill (word[2], by_file))

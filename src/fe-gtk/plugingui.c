@@ -170,11 +170,7 @@ plugingui_unload (GtkWidget * wid, gpointer unused)
 		return;
 
 	len = strlen (file);
-#if defined(__hpux)
-	if (len > 3 && strcasecmp (file + len - 3, ".sl") == 0)
-#else
 	if (len > 3 && strcasecmp (file + len - 3, ".so") == 0)
-#endif
 	{
 		if (plugin_kill (modname, FALSE) == 2)
 			fe_message (_("That plugin is refusing to unload.\n"), FE_MSG_ERROR);
