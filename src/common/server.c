@@ -609,8 +609,10 @@ ssl_do_connect (server * serv)
 
 			server_cleanup (serv);
 
-			if (prefs.autoreconnectonfail)
+			if (prefs.autoreconnect) {
 				auto_reconnect (serv, FALSE, -1);
+				return 1;
+			}
 
 			return (0);				  /* remove it (0) */
 		}
@@ -733,8 +735,10 @@ ssl_do_connect (server * serv)
 							 NULL, NULL, 0);
 			server_cleanup (serv); /* ->connecting = FALSE */
 
-			if (prefs.autoreconnectonfail)
+			if (prefs.autoreconnect) {
 				auto_reconnect (serv, FALSE, -1);
+				return 1;
+			}
 
 			return (0);				  /* remove it (0) */
 		}
@@ -836,7 +840,7 @@ server_connect_success (server *serv)
 		/* send(serv->sok, "STLS\r\n", 6, 0); sleep(1); */
 		set_nonblocking (serv->sok);
 		serv->ssl_do_connect_tag = fe_timeout_add (SSLDOCONNTMOUT,
-																 ssl_do_connect, serv);
+		                                           ssl_do_connect, serv);
 		return;
 	}
 
@@ -880,7 +884,7 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 #endif
 		EMIT_SIGNAL (XP_TE_UKNHOST, sess, NULL, NULL, NULL, NULL, 0);
 		if (!servlist_cycle (serv))
-			if (prefs.autoreconnectonfail)
+			if (prefs.autoreconnect)
 				auto_reconnect (serv, FALSE, -1);
 		break;
 	case '2':						  /* connection failed */
@@ -898,7 +902,7 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 		EMIT_SIGNAL (XP_TE_CONNFAIL, sess, errorstring (atoi (tbuf)), NULL,
 						 NULL, NULL, 0);
 		if (!servlist_cycle (serv))
-			if (prefs.autoreconnectonfail)
+			if (prefs.autoreconnect)
 				auto_reconnect (serv, FALSE, -1);
 		break;
 	case '3':						  /* gethostbyname finished */

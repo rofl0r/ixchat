@@ -451,7 +451,6 @@ const struct prefs vars[] = {
 	{"irc_whois_front", P_OFFINT (irc_whois_front), TYPE_BOOL},
 
 	{"net_auto_reconnect", P_OFFINT (autoreconnect), TYPE_BOOL},
-	{"net_auto_reconnectonfail", P_OFFINT (autoreconnectonfail), TYPE_BOOL},
 	{"net_bind_host", P_OFFSET (hostname), TYPE_STR},
 	{"net_ping_timeout", P_OFFINT (pingtimeout), TYPE_INT},
 	{"net_proxy_auth", P_OFFINT (proxy_auth), TYPE_BOOL},
