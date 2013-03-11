@@ -967,6 +967,8 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 	case '8':
 		PrintText (sess, _("Proxy traversal failed.\n"));
 		server_disconnect (sess, FALSE, -1);
+		if (prefs.autoreconnect)
+				auto_reconnect (serv, FALSE, -1);
 		break;
 	case '9':
 		waitline2 (source, tbuf, sizeof tbuf);
