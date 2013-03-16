@@ -531,7 +531,7 @@ XS (XS_Xchat_register)
 	char *name, *version, *desc, *filename;
 	void *gui_entry;
 	dXSARGS;
-	if (items != 4) {
+	if (items != 5) {
 		xchat_printf (ph,
 						  "Usage: Xchat::Internal::register(scriptname, version, desc, filename)");
 	} else {
