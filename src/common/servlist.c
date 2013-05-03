@@ -42,6 +42,7 @@ struct defaultserver
 	char *host;
 	char *channel;
 	char *charset;
+	int nsmode;		/* default NickServ type */
 };
 
 static const struct defaultserver def[] =
@@ -152,7 +153,7 @@ static const struct defaultserver def[] =
 	{0,			"irc.criten.net"},
 	{0,			"irc.eu.criten.net"},
 
-	{"DALnet",	0},
+	{"DALnet", 0, 0, 0, 2},
 	{0,			"irc.dal.net"},
 	{0,			"irc.eu.dal.net"},
 
@@ -369,7 +370,7 @@ static const struct defaultserver def[] =
 	{0,			"uc.PTnet.org"},
 	{0,			"nfsi.ptnet.org"},
 
-	{"QuakeNet",	0},
+	{"QuakeNet", 0, 0, 0, 5},
 	{0,			"irc.quakenet.org"},
 	{0,			"irc.se.quakenet.org"},
 	{0,			"irc.dk.quakenet.org"},
@@ -403,7 +404,7 @@ static const struct defaultserver def[] =
 	{"Rizon", 0},
 	{0,			"irc.rizon.net"},
 
-	{"RusNet", 0, 0, "KOI8-R (Cyrillic)"},
+	{"RusNet", 0, 0, "KOI8-R (Cyrillic)", 2},
 	{0,			"irc.tomsk.net"},
 	{0,			"irc.rinet.ru"},
 	{0,			"irc.run.net"},
@@ -461,7 +462,7 @@ static const struct defaultserver def[] =
 	{0,			"us.undernet.org"},
 	{0,			"eu.undernet.org"},
 
-	{"UniBG",		0},
+	{"UniBG", 0, 0, 0, 4},
 	{0,			"irc.lirex.com"},
 	{0,			"irc.naturella.com"},
 	{0,			"irc.spnet.net"},
@@ -923,6 +924,10 @@ servlist_load_defaults (void)
 			{
 				free (net->encoding);
 				net->encoding = strdup (def[i].charset);
+			}
+			if (def[i].nsmode)
+			{
+				net->nstype = def[i].nsmode;
 			}
 			if (g_str_hash (def[i].network) == 0x8e1b96f7)
 				prefs.slist_select = j;
