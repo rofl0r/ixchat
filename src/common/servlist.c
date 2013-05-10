@@ -42,7 +42,7 @@ struct defaultserver
 	char *host;
 	char *channel;
 	char *charset;
-	int nsmode;		/* default NickServ type */
+	int loginmode;		/* default authentication type */
 };
 
 static const struct defaultserver def[] =
@@ -213,7 +213,7 @@ static const struct defaultserver def[] =
 	{0,			"irc.ggn.net"},
 	{0,			"irc.vendetta.com"},
 
-	{"FreeNode",	0},
+	{"freenode", 0, "#xchat", 0, 6},
 	{0,				"irc.freenode.net"},
 
 /*	{"Freeworld",	0},
@@ -529,18 +529,17 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 		}
 	}
 
-	if (net->nstype >= 1)	/* once again, make sure gtk_combo_box_get_active() is not bugging us, just in case */
+	if (net->logintype)
 	{
-		serv->nickservtype = net->nstype - 1;	/* ircnet->nstype starts at 1, server->nickservtype starts at 0! */
+		serv->loginmethod = net->logintype;
 	}
 	else
 	{
-		serv->nickservtype = 1;					/* use /NickServ by default */
+		serv->loginmethod = 2;				/* use /NickServ by default */
 	}
 
 	serv->password[0] = 0;
 	serv->sasluser[0] = 0;
-	serv->saslpassword[0] = 0;
 
 	if (net->pass)
 		safe_strcpy (serv->password, net->pass, sizeof (serv->password));
@@ -556,8 +555,6 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 			safe_strcpy (serv->sasluser, net->nick, sizeof (serv->sasluser));
 		}
 	}
-	if (net->saslpass)
-		safe_strcpy (serv->saslpassword, net->saslpass, sizeof (serv->saslpassword));
 
 	serv->dont_use_proxy = (net->flags & FLAG_USE_PROXY) ? FALSE : TRUE;
 
@@ -840,7 +837,6 @@ servlist_cleanup (void)
 	{
 		net = list->data;
 		free_and_clear (net->pass);
-		free_and_clear (net->saslpass);
 		free_and_clear (net->nickserv);
 	}
 }
@@ -863,7 +859,6 @@ servlist_net_remove (ircnet *net)
 	if (net->real)
 		free (net->real);
 	free_and_clear (net->pass);
-	free_and_clear (net->saslpass);
 	if (net->autojoin)
 		free (net->autojoin);
 	if (net->command)
@@ -925,9 +920,9 @@ servlist_load_defaults (void)
 				free (net->encoding);
 				net->encoding = strdup (def[i].charset);
 			}
-			if (def[i].nsmode)
+			if (def[i].loginmode)
 			{
-				net->nstype = def[i].nsmode;
+				net->logintype = def[i].loginmode;
 			}
 			if (g_str_hash (def[i].network) == 0x8e1b96f7)
 				prefs.slist_select = j;
@@ -979,9 +974,6 @@ servlist_load (void)
 			case 'P':
 				net->pass = strdup (buf + 2);
 				break;
-			case 'A':
-				net->saslpass = strdup (buf + 2);
-				break;
 			case 'J':
 				net->autojoin = strdup (buf + 2);
 				break;
@@ -1013,8 +1005,8 @@ servlist_load (void)
 			case 'B':
 				net->nickserv = strdup (buf + 2);
 				break;
-			case 'T':
-				net->nstype = atoi (buf + 2);
+			case 'L':
+				net->logintype = atoi (buf + 2);
 				break;
 			}
 		}
@@ -1113,26 +1105,12 @@ servlist_save (void)
 			fprintf (fp, "R=%s\n", net->real);
 		if (net->pass)
 			fprintf (fp, "P=%s\n", net->pass);
-		if (net->saslpass)
-			fprintf (fp, "A=%s\n", net->saslpass);
 		if (net->autojoin)
 			fprintf (fp, "J=%s\n", net->autojoin);
 		if (net->nickserv)
 			fprintf (fp, "B=%s\n", net->nickserv);
-		if (net->nstype)
-		{
-			if (net->nstype == -1)		/* gtk_combo_box_get_active() returns -1 for invalid indices */
-			{
-				net->nstype = 0; 		/* avoid further crashes for the current session */
-				char *buf = g_strdup_printf (_("Warning: invalid NickServ type. Falling back to default type for network %s."), net->name);
-				fe_message (buf, FE_MSG_WARN);
-				g_free (buf);
-			}
-			else						/* the selection was fine, save it */
-			{
-				fprintf (fp, "T=%d\n", net->nstype);
-			}
-		}
+		if (net->logintype)
+			fprintf (fp, "L=%d\n", net->logintype);
 		if (net->encoding && strcasecmp (net->encoding, "System") &&
 			 strcasecmp (net->encoding, "System default"))
 		{
