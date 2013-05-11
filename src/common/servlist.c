@@ -539,7 +539,6 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 	}
 
 	serv->password[0] = 0;
-	serv->sasluser[0] = 0;
 
 	if (net->pass)
 		safe_strcpy (serv->password, net->pass, sizeof (serv->password));
@@ -547,12 +546,10 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 	if (net->flags & FLAG_USE_GLOBAL)
 	{
 		strcpy (serv->nick, prefs.nick1);
-		strcpy (serv->sasluser, prefs.nick1);
 	} else
 	{
 		if (net->nick) {
 			strcpy (serv->nick, net->nick);
-			safe_strcpy (serv->sasluser, net->nick, sizeof (serv->sasluser));
 		}
 	}
 
