@@ -127,12 +127,12 @@ static const char *login_types[]=
 {
 	"Default",
 	"SASL",
-	"/pass",
-	"/msg NickServ",
-	"/NickServ",
-	"/NS",
-	"/msg NS",
-	"/auth",
+	"Server Password",
+	"Message NickServ",
+	"NickServ",
+	"NS",
+	"Message NS",
+	"AUTH",
 	NULL
 };
 
