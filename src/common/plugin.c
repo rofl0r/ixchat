@@ -1025,11 +1025,6 @@ xchat_get_info (xchat_plugin *ph, const char *id)
 	case 0x339763: /* nick */
 		return sess->server->nick;
 
-	case 0x438fdf9: /* nickserv */
-		if (sess->server->network)
-			return ((ircnet *)sess->server->network)->nickserv;
-		return NULL;
-
 	case 0xca022f43: /* server */
 		if (!sess->server->connected)
 			return NULL;

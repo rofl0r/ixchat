@@ -96,7 +96,9 @@ static void
 irc_ns_ghost (server *serv, char *usname, char *pass)
 {
 	if (serv->loginmethod != 5)
+	{
 		irc_nickserv (serv, "GHOST", usname, " ", pass);
+	}
 }
 
 static void
