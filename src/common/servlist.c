@@ -535,7 +535,7 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 	}
 	else
 	{
-		serv->loginmethod = 2;				/* use /NickServ by default */
+		serv->loginmethod = 7;				/* Use server password by default. If we had a NickServ password, it'd be set to 2 already. */
 	}
 
 	serv->password[0] = 0;
