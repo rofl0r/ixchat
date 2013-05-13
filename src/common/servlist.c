@@ -153,7 +153,7 @@ static const struct defaultserver def[] =
 	{0,			"irc.criten.net"},
 	{0,			"irc.eu.criten.net"},
 
-	{"DALnet", 0, 0, 0, 2},
+	{"DALnet", 0},
 	{0,			"irc.dal.net"},
 	{0,			"irc.eu.dal.net"},
 
@@ -213,7 +213,7 @@ static const struct defaultserver def[] =
 	{0,			"irc.ggn.net"},
 	{0,			"irc.vendetta.com"},
 
-	{"freenode", 0, "#xchat", 0, 6},
+	{"freenode", 0, "#xchat", 0, LOGIN_SASL},
 	{0,				"irc.freenode.net"},
 
 /*	{"Freeworld",	0},
@@ -370,7 +370,7 @@ static const struct defaultserver def[] =
 	{0,			"uc.PTnet.org"},
 	{0,			"nfsi.ptnet.org"},
 
-	{"QuakeNet", 0, 0, 0, 5},
+	{"QuakeNet", 0, 0, 0, LOGIN_AUTH},
 	{0,			"irc.quakenet.org"},
 	{0,			"irc.se.quakenet.org"},
 	{0,			"irc.dk.quakenet.org"},
@@ -404,7 +404,7 @@ static const struct defaultserver def[] =
 	{"Rizon", 0},
 	{0,			"irc.rizon.net"},
 
-	{"RusNet", 0, 0, "KOI8-R (Cyrillic)", 2},
+	{"RusNet", 0, 0, "KOI8-R (Cyrillic)"},
 	{0,			"irc.tomsk.net"},
 	{0,			"irc.rinet.ru"},
 	{0,			"irc.run.net"},
@@ -462,7 +462,7 @@ static const struct defaultserver def[] =
 	{0,			"us.undernet.org"},
 	{0,			"eu.undernet.org"},
 
-	{"UniBG", 0, 0, 0, 4},
+	{"UniBG", 0, 0, 0, LOGIN_MSG_NS},
 	{0,			"irc.lirex.com"},
 	{0,			"irc.naturella.com"},
 	{0,			"irc.spnet.net"},
@@ -535,7 +535,7 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 	}
 	else
 	{
-		serv->loginmethod = 7;				/* Use server password by default. If we had a NickServ password, it'd be set to 2 already. */
+		serv->loginmethod = LOGIN_DEFAULT_REAL;
 	}
 
 	serv->password[0] = 0;

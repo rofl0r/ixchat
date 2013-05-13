@@ -35,6 +35,17 @@ extern GSList *network_list;
 #define FLAG_FAVORITE			64
 #define FLAG_COUNT				7
 
+/* Login methods. Use server password by default - if we had a NickServ password, it'd be set to 2 already by servlist_load() */
+#define LOGIN_DEFAULT_REAL		LOGIN_PASS		/* this is to set the default login method for unknown servers */
+#define LOGIN_DEFAULT			0				/* this is for the login type dropdown, doesn't serve any other purpose */
+#define LOGIN_MSG_NICKSERV		1
+#define LOGIN_NICKSERV			2
+#define LOGIN_NS				3
+#define LOGIN_MSG_NS			4
+#define LOGIN_AUTH				5
+#define LOGIN_SASL				6
+#define LOGIN_PASS				7
+
 void servlist_init (void);
 int servlist_save (void);
 int servlist_cycle (server *serv);
