@@ -1213,7 +1213,7 @@ process_named_msg (session *sess, char *type, char *word[], char *word_eol[])
 					text++;
 				}
 
-				if (!strncmp (text, "CHALLENGE ", 10))		/* QuakeNet CHALLENGEAUTH upon our request */
+				if (!strncmp (text, "CHALLENGE ", 10))		/* QuakeNet CHALLENGE upon our request */
 				{
 					response = challengeauth_response (((ircnet *)serv->network)->user ? ((ircnet *)serv->network)->user : prefs.username, serv->password, word[5]);
 
@@ -1224,6 +1224,7 @@ process_named_msg (session *sess, char *type, char *word[], char *word_eol[])
 						CHALLENGEAUTH_ALGO);
 
 					g_free (response);
+					return;									/* omit the CHALLENGE <hash> ALGOS message */
 				}
 
 				if (serv->have_idmsg)
