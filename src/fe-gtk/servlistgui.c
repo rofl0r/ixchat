@@ -119,7 +119,8 @@ static int login_types_conf[] =
 	LOGIN_MSG_NICKSERV,
 	LOGIN_NICKSERV,
 	LOGIN_MSG_NS,
-	LOGIN_CHALLENGEAUTH
+	LOGIN_CHALLENGEAUTH,
+	LOGIN_CUSTOM
 #if 0
 	LOGIN_NS,
 	LOGIN_AUTH,
@@ -135,6 +136,7 @@ static const char *login_types[]=
 	"NickServ (/NICKSERV + password)",
 	"NickServ (/MSG NS + password)",
 	"Challenge Auth (username + password)",
+	"Custom... (connect commands)",
 #if 0
 	"NickServ (/NS + password)",
 	"AUTH (/AUTH nickname password)",
@@ -1387,6 +1389,12 @@ servlist_logintypecombo_cb (GtkEntry *entry, gpointer userdata)
 			selected_net->logintype = login_types_conf[index];
 		}
 	}
+#if 0
+	if (login_types_conf[index] == LOGIN_CUSTOM)
+	{
+		gtk_notebook_set_current_page (GTK_NOTEBOOK (userdata), 2);		/* FIXME avoid hardcoding? */
+	}
+#endif
 }
 
 
