@@ -471,6 +471,7 @@ typedef struct server
 	unsigned int have_idmsg:1;		/* freenode's IDENTIFY-MSG */
 	unsigned int have_accnotify:1; /* cap account-notify */
 	unsigned int have_extjoin:1;	/* cap extended-join */
+	unsigned int have_server_time:1;	/* cap server-time */
 	unsigned int have_sasl:1;		/* SASL capability */
 	unsigned int have_except:1;	/* ban exemptions +e */
 	unsigned int using_cp1255:1;	/* encoding is CP1255/WINDOWS-1255? */
