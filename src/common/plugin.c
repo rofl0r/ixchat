@@ -432,7 +432,7 @@ plugin_hook_find (GSList *list, int type, char *name)
 	while (list)
 	{
 		hook = list->data;
-		if (hook->type == type)
+		if (hook && hook->type == type)
 		{
 			if (strcasecmp (hook->name, name) == 0)
 				return list;
@@ -503,7 +503,7 @@ xit:
 	{
 		hook = list->data;
 		next = list->next;
-		if (hook->type == HOOK_DELETED)
+		if (!hook || hook->type == HOOK_DELETED)
 		{
 			hook_list = g_slist_remove (hook_list, hook);
 			free (hook);
@@ -615,7 +615,7 @@ plugin_insert_hook (xchat_hook *new_hook)
 	while (list)
 	{
 		hook = list->data;
-		if (hook->type == new_hook->type && hook->pri <= new_hook->pri)
+		if (hook && hook->type == new_hook->type && hook->pri <= new_hook->pri)
 		{
 			hook_list = g_slist_insert_before (hook_list, list, new_hook);
 			return;
@@ -693,7 +693,7 @@ plugin_command_list(GList *tmp_list)
 	while (list)
 	{
 		hook = list->data;
-		if (hook->type == HOOK_COMMAND)
+		if (hook && hook->type == HOOK_COMMAND)
 			tmp_list = g_list_prepend(tmp_list, hook->name);
 		list = list->next;
 	}
@@ -711,7 +711,7 @@ plugin_command_foreach (session *sess, void *userdata,
 	while (list)
 	{
 		hook = list->data;
-		if (hook->type == HOOK_COMMAND && hook->name[0])
+		if (hook && hook->type == HOOK_COMMAND && hook->name[0])
 		{
 			cb (sess, userdata, hook->name, hook->help_text);
 		}
