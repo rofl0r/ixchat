@@ -38,6 +38,8 @@ void inbound_cap_ack (server *serv, char *nick, char *extensions);
 void inbound_cap_ls (server *serv, char *nick, char *extensions);
 void inbound_cap_nak (server *serv);
 void inbound_cap_list (server *serv, char *nick, char *extensions);
+void inbound_sasl_authenticate (server *serv, char *data);
+int inbound_sasl_error (server *serv);
 void do_dns (session *sess, char *nick, char *host);
 gboolean alert_match_word (char *word, char *masks);
 gboolean alert_match_text (char *text, char *masks);

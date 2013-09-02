@@ -1426,8 +1426,6 @@ inbound_identified (server *serv)	/* 'MODE +e MYSELF' on freenode */
 void
 inbound_cap_ack (server *serv, char *nick, char *extensions)
 {
-	char *pass; /* buffer for SASL password */
-
 	EMIT_SIGNAL (XP_TE_CAPACK, serv->server_session, nick, extensions,
 								  NULL, NULL, 0);
 
@@ -1458,20 +1456,25 @@ inbound_cap_ack (server *serv, char *nick, char *extensions)
 
 	if (strstr (extensions, "sasl") != 0)
 	{
-		char *user;
-
 		serv->have_sasl = TRUE;
+		serv->sent_saslauth = FALSE;
 
-		user = (((ircnet *)serv->network)->user) 
-			? (((ircnet *)serv->network)->user) : prefs.username;
-
-		EMIT_SIGNAL (XP_TE_SASLAUTH, serv->server_session, user, NULL,
-									  NULL,	NULL,	0);
+#ifdef USE_OPENSSL
+		if (serv->loginmethod == LOGIN_SASLEXTERNAL)
+		{
+			serv->sasl_mech = MECH_EXTERNAL;
+			tcp_send_len (serv, "AUTHENTICATE EXTERNAL\r\n", 23);
+		}
+		else
+		{
+			/* default to most secure, it will fallback if not supported */
+			serv->sasl_mech = MECH_AES;
+			tcp_send_len (serv, "AUTHENTICATE DH-AES\r\n", 21);
+		}
+#else
+		serv->sasl_mech = MECH_PLAIN;
 		tcp_send_len (serv, "AUTHENTICATE PLAIN\r\n", 20);
-
-		pass = encode_sasl_pass (user, serv->password);
-		tcp_sendf (serv, "AUTHENTICATE %s\r\n", pass);
-		free (pass);
+#endif
 	}
 }
 
@@ -1544,9 +1547,9 @@ inbound_cap_ls (server *serv, char *nick, char *extensions_str)
 		
 
 		/* if the SASL password is set AND auth mode is set to SASL, request SASL auth */
-		if (serv->loginmethod == LOGIN_SASL
-			 && strcmp (extension, "sasl") == 0
-			 && strlen (serv->password) != 0)
+		if (!strcmp (extension, "sasl")
+			&& ((serv->loginmethod == LOGIN_SASL && strlen (serv->password) != 0)
+			|| (serv->loginmethod == LOGIN_SASLEXTERNAL && serv->have_cert)))
 		{
 			strcat (buffer, "sasl ");
 			want_cap = 1;
@@ -1566,6 +1569,7 @@ inbound_cap_ls (server *serv, char *nick, char *extensions_str)
 	if (!want_sasl)
 	{
 		/* if we use SASL, CAP END is dealt via raw numerics */
+		serv->sent_capend = TRUE;
 		tcp_send_len (serv, "CAP END\r\n", 9);
 	}
 }
@@ -1573,6 +1577,7 @@ inbound_cap_ls (server *serv, char *nick, char *extensions_str)
 void
 inbound_cap_nak (server *serv)
 {
+	serv->sent_capend = TRUE;
 	tcp_send_len (serv, "CAP END\r\n", 9);
 }
 
@@ -1581,4 +1586,70 @@ inbound_cap_list (server *serv, char *nick, char *extensions)
 {
 	EMIT_SIGNAL (XP_TE_CAPACK, serv->server_session, nick, extensions,
 								  NULL, NULL, 0);
+}
+
+static const char *sasl_mechanisms[] =
+{
+	"PLAIN",
+	"DH-BLOWFISH",
+	"DH-AES",
+	"EXTERNAL"
+};
+
+void
+inbound_sasl_authenticate (server *serv, char *data)
+{
+		char *user, *pass = NULL;
+		const char *mech = sasl_mechanisms[serv->sasl_mech];
+
+		user = (((ircnet*)serv->network)->user)
+				? (((ircnet*)serv->network)->user) : prefs.username;
+
+		switch (serv->sasl_mech)
+		{
+		case MECH_PLAIN:
+			pass = encode_sasl_pass_plain (user, serv->password);
+			break;
+#ifdef USE_OPENSSL
+		case MECH_BLOWFISH:
+			pass = encode_sasl_pass_blowfish (user, serv->password, data);
+			break;
+		case MECH_AES:
+			pass = encode_sasl_pass_aes (user, serv->password, data);
+			break;
+		case MECH_EXTERNAL:
+			pass = g_strdup ("+");
+			break;
+#endif
+		}
+
+		if (pass == NULL)
+		{
+			/* something went wrong abort */
+			serv->sent_saslauth = TRUE; /* prevent trying PLAIN */
+			tcp_sendf (serv, "AUTHENTICATE *\r\n");
+			return;
+		}
+
+		serv->sent_saslauth = TRUE;
+		tcp_sendf (serv, "AUTHENTICATE %s\r\n", pass);
+		g_free (pass);
+
+		
+		EMIT_SIGNAL (XP_TE_SASLAUTH, serv->server_session, user, (char*)mech,
+								NULL,	NULL,	0);
+}
+
+int
+inbound_sasl_error (server *serv)
+{
+	/* If server sent 904 before we sent password,
+		* mech not support so fallback to next mech */
+	if (!serv->sent_saslauth && serv->sasl_mech != MECH_EXTERNAL && serv->sasl_mech != MECH_PLAIN)
+	{
+		serv->sasl_mech -= 1;
+		tcp_sendf (serv, "AUTHENTICATE %s\r\n", sasl_mechanisms[serv->sasl_mech]);
+		return 1;
+	}
+	return 0;
 }

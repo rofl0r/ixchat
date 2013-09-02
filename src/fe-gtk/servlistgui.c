@@ -115,6 +115,7 @@ static int login_types_conf[] =
 {
 	LOGIN_DEFAULT,			/* default entry - we don't use this but it makes indexing consistent with login_types[] so it's nice */
 	LOGIN_SASL,
+	LOGIN_SASLEXTERNAL,
 	LOGIN_PASS,
 	LOGIN_MSG_NICKSERV,
 	LOGIN_NICKSERV,
@@ -131,6 +132,7 @@ static const char *login_types[]=
 {
 	"Default",
 	"SASL (username + password)",
+	"SASL EXTERNAL (cert)",
 	"Server Password (/PASS password)",
 	"NickServ (/MSG NickServ + password)",
 	"NickServ (/NICKSERV + password)",
@@ -1364,6 +1366,12 @@ servlist_combo_cb (GtkEntry *entry, gpointer userdata)
 			free (selected_net->encoding);
 		selected_net->encoding = strdup (entry->text);
 	}
+	
+	/* EXTERNAL uses a cert, not a pass */
+	if (selected_net->logintype == LOGIN_SASLEXTERNAL)
+		gtk_widget_set_sensitive (edit_entry_pass, FALSE);
+	else
+		gtk_widget_set_sensitive (edit_entry_pass, TRUE);
 }
 
 /* Fills up the network's authentication type so that it's guaranteed to be either NULL or a valid value. */
@@ -1614,6 +1622,8 @@ servlist_open_edit (GtkWidget *parent, ircnet *net)
 									  net->pass, 0,
 					_("Password used for login. If in doubt, leave blank."));
 	gtk_entry_set_visibility (GTK_ENTRY (edit_entry_pass), FALSE);
+	if (selected_net && selected_net->logintype == LOGIN_SASLEXTERNAL)
+		gtk_widget_set_sensitive (edit_entry_pass, FALSE);
 
 
 	label34 = gtk_label_new (_("Character set:"));
