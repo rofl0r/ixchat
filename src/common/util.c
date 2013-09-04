@@ -1837,6 +1837,7 @@ end:
 }
 #endif
 
+#ifdef USE_OPENSSL
 static char *
 str_sha256hash (char *string)
 {
@@ -1912,4 +1913,5 @@ challengeauth_response (char *username, char *password, char *challenge)
 
 	return (char *) digest;
 }
+#endif
 
