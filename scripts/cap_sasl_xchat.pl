@@ -328,11 +328,11 @@ sub cmd_sasl_save {
 	
 	if( open my $fh, ">", $file ) {
 
-	foreach my $net (keys %sasl_auth) {
-		printf $fh ("%s\t%s\t%s\t%s\n", lc $net, $sasl_auth{$net}{user}, $sasl_auth{$net}{password}, $sasl_auth{$net}{mech});
-	}
+		foreach my $net (keys %sasl_auth) {
+			printf $fh ("%s\t%s\t%s\t%s\n", lc $net, $sasl_auth{$net}{user}, $sasl_auth{$net}{password}, $sasl_auth{$net}{mech});
+		}
 
-	prnt( "SASL: auth saved to $file" );
+		prnt( "SASL: auth saved to $file" );
 	} else {
 		prnt qq{Couldn't open '$file' to save auth data: $!};
 	}
