@@ -98,6 +98,11 @@ parsearg() {
 	--includedir=*) includedir=`spliteq $1`;;
 	--sysconfdir=*) sysconfdir=`spliteq $1`;;
 	--help) usage;;
+	--disable-python) disable_python=1 ;;
+	--disable-perl) disable_perl=1 ;;
+	--disable-tcl) disable_tcl=1 ;;
+	--disable-libsexy) disable_libsexy=1 ;;
+	--disable-gtkspell) disable_gtkspell=1 ;;
 	esac
 }
 
@@ -143,6 +148,7 @@ add_config "PIXMAPCONVERT = $prog1"
 use_plugin=
 
 perl=$(check_program "perl" 0)
+[ -n "$disable_perl" ] && perl=
 if [ -n "$perl" ] ; then
 	printf "perl detected, plugin activated\n"
 	PERL_CFLAGS=`$perl -MExtUtils::Embed -e ccopts 2>/dev/null`
@@ -159,6 +165,7 @@ if [ -n "$perl" ] ; then
 fi
 
 python=$(check_program "python" 0)
+[ -n "$disable_python" ] && python=
 if [ -n "$python" ] ; then
 	printf "python detected, plugin activated\n"
 	printf "WARNING: python plugin needs environment variable PYTHONHOME\n"
@@ -199,6 +206,7 @@ if [ -n "$python" ] ; then
 fi
 
 tcl=$(check_program "tclsh" 0)
+[ -n "$disable_tcl" ] && tcl=
 if [ -n "$tcl" ] ; then
 	printf "tcl detected, plugin activated\n"
 	TCL_CFLAGS=$(get_pkgconf_cflags tcl)
@@ -247,9 +255,9 @@ for i in libsexy gtkspell-2.0 ; do
 		spell_flags=$(get_pkgconf_ldflags $i)
 		add_ldflags "$spell_flags"
 		if [ "$i" = "libsexy" ] ; then
-			add_cflags "-DUSE_LIBSEXY"
+			[ -z "$disable_libsexy" ] && add_cflags "-DUSE_LIBSEXY"
 		else
-			add_cflags "-DUSE_GTKSPELL"
+			[ -z "$disable_gtkspell" ] && add_cflags "-DUSE_GTKSPELL"
 		fi
 		break
 	fi
