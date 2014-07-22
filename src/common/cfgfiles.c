@@ -556,7 +556,7 @@ load_config (void)
 	prefs.local_ip = 0xffffffff;
 	prefs.irc_join_delay = 3;
 	prefs.show_marker = 1;
-	prefs.newtabstofront = 2;
+	prefs.newtabstofront = 0;
 	prefs.completion_amount = 5;
 	prefs.away_timeout = 60;
 	prefs.away_size_max = 300;
