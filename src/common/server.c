@@ -67,7 +67,6 @@
 #endif
 
 #ifdef USE_OPENSSL
-extern SSL_CTX *ctx;				  /* xchat.c */
 /* local variables */
 static struct session *g_sess = NULL;
 #endif
@@ -828,8 +827,8 @@ server_connect_success (server *serv)
 
 		/* it'll be a memory leak, if connection isn't terminated by
 		   server_cleanup() */
-		serv->ssl = _SSL_socket (ctx, serv->sok);
-		if ((err = _SSL_set_verify (ctx, ssl_cb_verify, NULL)) && !serv->accept_invalid_cert)
+		serv->ssl = _SSL_socket (serv->ctx, serv->sok);
+		if ((err = _SSL_set_verify (serv->ctx, ssl_cb_verify, NULL)))
 		{
 			EMIT_SIGNAL (XP_TE_CONNFAIL, serv->server_session, err, NULL,
 							 NULL, NULL, 0);
@@ -1603,9 +1602,9 @@ server_connect (server *serv, char *hostname, int port, int no_login)
 	session *sess = serv->server_session;
 
 #ifdef USE_OPENSSL
-	if (!ctx && serv->use_ssl)
+	if (!serv->ctx && serv->use_ssl)
 	{
-		if (!(ctx = _SSL_context_init (ssl_cb_info, FALSE)))
+		if (!(serv->ctx = _SSL_context_init (ssl_cb_info, FALSE)))
 		{
 			fprintf (stderr, "_SSL_context_init failed\n");
 			exit (1);
@@ -1648,9 +1647,9 @@ server_connect (server *serv, char *hostname, int port, int no_login)
 		/* first try network specific cert/key */
 		snprintf (cert_file, sizeof (cert_file), "%s/%s.pem",
 					 get_xdir_fs (), server_get_network (serv, TRUE));
-		if (SSL_CTX_use_certificate_file (ctx, cert_file, SSL_FILETYPE_PEM) == 1)
+		if (SSL_CTX_use_certificate_file (serv->ctx, cert_file, SSL_FILETYPE_PEM) == 1)
 		{
-			if (SSL_CTX_use_PrivateKey_file (ctx, cert_file, SSL_FILETYPE_PEM) == 1)
+			if (SSL_CTX_use_PrivateKey_file (serv->ctx, cert_file, SSL_FILETYPE_PEM) == 1)
 				serv->have_cert = TRUE;
 		}
 		else
@@ -1658,9 +1657,9 @@ server_connect (server *serv, char *hostname, int port, int no_login)
 			/* if that doesn't exist, try ~/.xchat2/client.pem */
 			snprintf (cert_file, sizeof (cert_file), "%s/%s.pem",
 						 get_xdir_fs (), "client");
-			if (SSL_CTX_use_certificate_file (ctx, cert_file, SSL_FILETYPE_PEM) == 1)
+			if (SSL_CTX_use_certificate_file (serv->ctx, cert_file, SSL_FILETYPE_PEM) == 1)
 			{
-				if (SSL_CTX_use_PrivateKey_file (ctx, cert_file, SSL_FILETYPE_PEM) == 1)
+				if (SSL_CTX_use_PrivateKey_file (serv->ctx, cert_file, SSL_FILETYPE_PEM) == 1)
 					serv->have_cert = TRUE;
 			}
 		}
@@ -1955,6 +1954,10 @@ server_free (server *serv)
 		free (serv->encoding);
 	if (serv->autojoin)
 		free (serv->autojoin);
+#ifdef USE_OPENSSL
+	if (serv->ctx)
+		_SSL_context_free (serv->ctx);
+#endif
 
 	fe_server_callback (serv);
 
