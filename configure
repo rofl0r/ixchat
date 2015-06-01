@@ -62,15 +62,32 @@ check_program() {
 	printf "%s\n" "$program"
 }
 
+pdisable() {
+	local a="$1"
+	printf "--enable-%s[=yes/no/auto]\tenable %s %s [default: auto]\n" "$a" "$a" "$2"
+}
+
 usage() {
 	echo "supported arguments"
+	echo "--help			show this text"
 	echo "--prefix=/path 		default: $prefix"
 	echo "--exec_prefix=/path	default: $prefix/bin"
 	echo "--bindir=/path		default: $prefix/bin"
 	echo "--libdir=/path		default: $prefix/lib"
 	echo "--includedir=/path	default: $prefix/include"
 	echo "--sysconfdir=/path	default: $prefix/etc"
-	echo "--help : show this text"
+	echo
+	for i in libsexy gtkspell ; do pdisable $i "library usage" ; done
+	echo
+	for i in python tcl perl ; do pdisable $i plugin ; done
+	echo
+	echo "NOTE: the auto detection of the scripting language plugins"
+	echo "works only for non-crosscompile scenarios because the authors of those languages"
+	echo "stubbornly require you to execute the interpreter in a specific way to query"
+	echo "the necessary flags rather than relying on standardtools like pkgconfig."
+	echo "because of that, if set to yes, the required C/LDFLAGS for the plugins need to be passed"
+	echo "manually to configure using PERL_CFLAGS=... PY_LDFLAGS=... TCL_CFLAGS=... /configure ..."
+	echo
 	exit 1
 }
 
@@ -89,7 +106,19 @@ spliteq() {
 	# or echo "$arg" | sed 's/[^=]*=//'
 }
 
+check_feature() {
+	local f="$1"
+	local res=
+	case "$2" in
+	--enable-$f) res=yes;;
+	--disable-$f) res=no;;
+	--enable-$f=*) res=`spliteq $2`;;
+	esac
+	[ -n "$res" ] && eval $3=$res
+}
+
 parsearg() {
+	for i in python perl tcl libsexy gtkspell ; do check_feature $i "$1" feature_$i ; done
 	case "$1" in
 	--prefix=*) prefix=`spliteq $1`;;
 	--exec_prefix=*) exec_prefix=`spliteq $1`;;
@@ -98,14 +127,10 @@ parsearg() {
 	--includedir=*) includedir=`spliteq $1`;;
 	--sysconfdir=*) sysconfdir=`spliteq $1`;;
 	--help) usage;;
-	--disable-python) disable_python=1 ;;
-	--disable-perl) disable_perl=1 ;;
-	--disable-tcl) disable_tcl=1 ;;
-	--disable-libsexy) disable_libsexy=1 ;;
-	--disable-gtkspell) disable_gtkspell=1 ;;
 	esac
 }
 
+for i in  python perl tcl libsexy gtkspell ; do eval feature_$i=auto ; done
 while true ; do
 	case $1 in
 	-*) parsearg "$1"; shift;;
@@ -143,125 +168,131 @@ add_lib openssl "" "-lssl -lcrypto"
 prog1=$(check_program "gdk-pixbuf-csource" 1)
 add_config "PIXMAPCONVERT = $prog1"
 
+for i in libsexy gtkspell ; do
+	eval enabled=\${feature_$i}
+	printf "checking whether to use library $i..."
+	if [ "$enabled" = yes ] || [ "$enabled" = auto ] ; then
+		local l=$i
+		[ $l = gtkspell ] && l=gtkspell-2.0
+		spell_flags=$(get_pkgconf_cflags $l)
+		if [ ! -z "$spell_flags" ] ; then
+			add_cflags "$spell_flags"
+			spell_flags=$(get_pkgconf_ldflags $i)
+			add_ldflags "$spell_flags"
+			[ "$i" = "libsexy" ] add_cflags "-DUSE_LIBSEXY" || add_cflags "-DUSE_GTKSPELL"
+			printf "yes\n"
+		else
+			printf "no\n"
+		fi
+	fi
+done
+
 # plugin stuff ...
 
 use_plugin=
 
-perl=$(check_program "perl" 0)
-[ -n "$disable_perl" ] && perl=
-if [ -n "$perl" ] ; then
-	printf "perl detected, plugin activated\n"
-	PERL_CFLAGS=`$perl -MExtUtils::Embed -e ccopts 2>/dev/null`
-	PERL_LDFLAGS=`$perl -MExtUtils::Embed -e ldopts 2>/dev/null | sed 's/-lgdbm //'`
+printf "checking whether to use perl plugin..."
+if [ "$feature_perl" = auto ] ; then
+	perl=$(check_program "perl" 0)
+	if [ -n "$perl" ] ; then
+		PERL_CFLAGS=`$perl -MExtUtils::Embed -e ccopts 2>/dev/null`
+		PERL_LDFLAGS=`$perl -MExtUtils::Embed -e ldopts 2>/dev/null | sed 's/-lgdbm //'`
+		feature_perl=yes
+	fi
+fi
+if [ "$feature_perl" = yes ] ; then
+	printf "yes\n"
 	add_config "PERL_CFLAGS = $PERL_CFLAGS"
 	add_config "PERL_LDFLAGS = $PERL_LDFLAGS"
 	add_config "PLUGINS += perl.so"
-	if [ -z "$use_plugin" ] ; then
-		add_cflags "-DUSE_PLUGIN"
-		use_plugin=1
-	fi
 	# there are actually 2 plugins, "old" and new, but all scripts i've seen only use old
 	add_cflags "-DOLD_PERL"
+	use_plugin=1
+else
+	printf "no\n"
 fi
-
-python=$(check_program "python" 0)
-[ -n "$disable_python" ] && python=
-if [ -n "$python" ] ; then
-	printf "python detected, plugin activated\n"
+printf "checking whether to use tcl plugin..."
+if [ "$feature_tcl" = auto ] ; then
+	tcl=$(check_program "tclsh" 0)
+	if [ -n "$tcl" ] ; then
+		TCL_CFLAGS=$(get_pkgconf_cflags tcl)
+		TCL_LDFLAGS=$(get_pkgconf_ldflags tcl)
+		tcl_error=
+		# tcl 8.5 does not come with a pkgconfig file
+		# tcl 8.6. comes with a buggy one that fails to include its own library
+		# https://sourceforge.net/tracker/?func=detail&aid=3598298&group_id=10894&atid=110894
+		# hopefully tcl 8.7 will come with a *working* pkgconfig file ...
+		# until that happens, we need to fall back to its proprietary tclConfig system.
+		if [ -z "$TCL_LDFLAGS" ] || ! echo "$TCL_LDFLAGS" | grep "[-]ltcl" > /dev/null ; then
+			tcl_found=
+			for i in "$libdir" "$prefix"/lib/ "$prefix"/lib64/ /lib /lib64 /usr/lib /usr/lib64 ; do
+				printf "searching tclConfig.sh in $i ... "
+				if [ -e "$i"/tclConfig.sh ] ; then
+					. "$i"/tclConfig.sh
+					TCL_LDFLAGS="$TCL_LIB_SPEC $TCL_LIBS"
+					tcl_found=1
+					break
+				fi
+			done
+			if [ -z "$tcl_found" ] ; then
+				tcl_error=1
+			fi
+		fi
+		[ -z "$tcl_error" ] && feature_tcl=yes
+	fi
+fi
+if [ "$feature_tcl" = yes ] ; then
+	printf "yes\n"
+	add_config "TCL_CFLAGS = $TCL_CFLAGS"
+	add_config "TCL_LDFLAGS = $TCL_LDFLAGS"
+	add_config "PLUGINS += tcl.so"
+	use_plugin=1
+else
+	printf "no\n"
+fi
+printf "checking whether to use python plugin..."
+if [ "$feature_python" = auto ] ; then
+	python=$(check_program "python" 0)
+	if [ -n "$python" ] ; then
+		PY_CFLAGS=$(get_pkgconf_cflags python)
+		[ -z "$PY_CFLAGS" ] && PY_CFLAGS=$(get_pkgconf_cflags python-2.7)
+		if  [ -z "$PY_CFLAGS" ] ; then
+			for i in "$prefix" /usr /usr/local/ ; do
+				printf "searching Python.h in $i/include/python2.7 ... "
+                        	if [ -e "$i"/include/python2.7/Python.h ] ; then
+					PY_CFLAGS=-I"$i"/include/python2.7
+					printf "SUCCESS\n"
+					break;
+				else
+					printf "FAIL\n"
+				fi
+			done
+		fi
+		PY_LDFLAGS=$(get_pkgconf_ldflags python)
+		[ -z "$PY_LDFLAGS" ] && PY_LDFLAGS=$(get_pkgconf_ldflags python-2.7)
+		[ -z "$PY_LDFLAGS" ] && PY_LDFLAGS=-lpython2.7
+		[ ! -z "$PY_CFLAGS" ] && feature_python=yes
+	fi
+fi
+if [ "$feature_python" = yes ] ; then
+	printf "yes\n"
 	printf "WARNING: python plugin needs environment variable PYTHONHOME\n"
 	printf "  set to python's prefix.\n"
-	printf "  lack of that environment variable will cause xchat exitting\n"
+	printf "  lack of that environment variable will cause ixchat exitting\n"
 	printf "  when the plugin is loaded.\n"
 	printf "  on sabotage linux, use \"PYTHONHOME=/ ixchat\"\n"
 	printf "  to launch the program.\n"
-
-	PY_CFLAGS=$(get_pkgconf_cflags python)
-	[ -z "$PY_CFLAGS" ] && PY_CFLAGS=$(get_pkgconf_cflags python-2.7)
-	if  [ -z "$PY_CFLAGS" ] ; then
-		for i in "$prefix" /usr /usr/local/ ; do
-			printf "searching Python.h in $i/include/python2.7 ... "
-                        if [ -e "$i"/include/python2.7/Python.h ] ; then
-				PY_CFLAGS=-I"$i"/include/python2.7
-				printf "SUCCESS\n"
-				break;
-			else
-				printf "FAIL\n"
-			fi
-		done
-	fi
-	PY_LDFLAGS=$(get_pkgconf_ldflags python)
-	[ -z "$PY_LDFLAGS" ] && PY_LDFLAGS=$(get_pkgconf_ldflags python-2.7)
-	[ -z "$PY_LDFLAGS" ] && PY_LDFLAGS=-lpython2.7
-	if [ ! -z "$PY_CFLAGS" ] ; then
-		add_config "PY_CFLAGS = $PY_CFLAGS"
-		add_config "PY_LDFLAGS = $PY_LDFLAGS"
-		add_config "PLUGINS += python.so"
-		if [ -z "$use_plugin" ] ; then
-			add_cflags "-DUSE_PLUGIN"
-			use_plugin=1
-		fi
-	else
-		printf "python not found, skipping plugin\n"
-	fi
+	add_config "PY_CFLAGS = $PY_CFLAGS"
+	add_config "PY_LDFLAGS = $PY_LDFLAGS"
+	add_config "PLUGINS += python.so"
+	use_plugin=1
+else
+	printf "no\n"
 fi
 
-tcl=$(check_program "tclsh" 0)
-[ -n "$disable_tcl" ] && tcl=
-if [ -n "$tcl" ] ; then
-	printf "tcl detected, plugin activated\n"
-	TCL_CFLAGS=$(get_pkgconf_cflags tcl)
-	TCL_LDFLAGS=$(get_pkgconf_ldflags tcl)
-	tcl_error=
-	# tcl 8.5 does not come with a pkgconfig file
-	# tcl 8.6. comes with a buggy one that fails to include its own library
-	# https://sourceforge.net/tracker/?func=detail&aid=3598298&group_id=10894&atid=110894
-	# hopefully tcl 8.7 will come with a *working* pkgconfig file ...
-	# until that happens, we need to fall back to its proprietary tclConfig system.
-	if [ -z "$TCL_LDFLAGS" ] || ! echo "$TCL_LDFLAGS" | grep "[-]ltcl" > /dev/null ; then
-		tcl_found=
-		for i in "$libdir" "$prefix"/lib/ "$prefix"/lib64/ /lib /lib64 /usr/lib /usr/lib64 ; do
-			printf "searching tclConfig.sh in $i ... "
-			if [ -e "$i"/tclConfig.sh ] ; then
-				. "$i"/tclConfig.sh
-				TCL_LDFLAGS="$TCL_LIB_SPEC $TCL_LIBS"
-				tcl_found=1
-				printf "SUCCESS\n"
-				break
-			else
-				printf "FAIL\n"
-			fi
-		done
-		if [ -z "$tcl_found" ] ; then
-			echo "warning: tclConfig.sh not found and no pkgconfig entry available"
-			echo "disabling tcl plugin"
-			tcl_error=1
-		fi
-	fi
-	if [ -z "$tcl_error" ] ; then
-		add_config "TCL_CFLAGS = $TCL_CFLAGS"
-		add_config "TCL_LDFLAGS = $TCL_LDFLAGS"
-		add_config "PLUGINS += tcl.so"
-		if [ -z "$use_plugin" ] ; then
-			add_cflags "-DUSE_PLUGIN"
-			use_plugin=1
-		fi
-	fi
+if [ "$use_plugin" = 1 ] ; then 
+	add_cflags "-DUSE_PLUGIN"
 fi
-
-for i in libsexy gtkspell-2.0 ; do
-	spell_flags=$(get_pkgconf_cflags $i)
-	if [ ! -z "$spell_flags" ] ; then
-		add_cflags "$spell_flags"
-		spell_flags=$(get_pkgconf_ldflags $i)
-		add_ldflags "$spell_flags"
-		if [ "$i" = "libsexy" ] ; then
-			[ -z "$disable_libsexy" ] && add_cflags "-DUSE_LIBSEXY"
-		else
-			[ -z "$disable_gtkspell" ] && add_cflags "-DUSE_GTKSPELL"
-		fi
-		break
-	fi
-done
 
 if isbsd || ismac ; then
 	add_config "INSTALL_FLAGS=-m"
