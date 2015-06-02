@@ -2026,6 +2026,9 @@ text_emit (int index, session *sess, char *a, char *b, char *c, char *d, char* f
 		if (sess->alert_tray == SET_ON)
 			fe_tray_set_icon (FE_ICON_MESSAGE);
 		break;
+	case XP_TE_DISCON:
+		/* do not spam log */
+		if(!sess->total) return;
 	}
 
 	sound_play_event (index);
