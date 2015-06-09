@@ -326,6 +326,15 @@ N_("%C28-%C29$1/Wallops%C28-%O$t$2")},
 {"Resolving User", pevt_resolvinguser_help, 2, 
 N_("%C22*%O$tLooking up IP number for%C26 $1%O...")},
 
+{"SASL Authenticating", pevt_saslauth_help, 1, 
+N_("%C23*%O$tAuthenticating via SASL as %C29$1%O")},
+
+{"SASL Response", pevt_saslresponse_help, 132, 
+"%C29*%O$t$4"},
+
+{"Server Capabilities", pevt_servercap_help, 2, 
+N_("%C23*%O$tCapabilities supported by the server: %C29$2%O")},
+
 {"Server Connected", pevt_generic_none_help, 0, 
 N_("%C22*%O$t%C22Connected.")},
 
