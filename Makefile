@@ -47,6 +47,8 @@ PERL_HEADERS_INPUT = plugins/perl/lib/IRC.pm \
                      plugins/perl/lib/Xchat/List/Network/Entry.pm\
                      plugins/perl/lib/Xchat/List/Network/AutoJoin.pm
 
+TEXT_HEADERS = src/common/textevents.h src/common/textenums.h
+
 INSTALL_FLAGS=-D -m
 
 -include config.mak
@@ -64,10 +66,8 @@ $(DESTDIR)$(libdir)/xchat/plugins/%: %
 src/make-te: src/make-te.c
 	$(HOSTCC) $< -o $@
 
-src/common/textevents.h src/common/textenums.h: src/common/textevents.in src/make-te
+$(TEXT_HEADERS): src/common/textevents.in src/make-te
 	src/make-te < src/common/textevents.in 2>src/common/textenums.h 1>src/common/textevents.h
-
-src/common/proto-irc.c: src/common/textevents.h src/common/textenums.h
 
 $(PERL_HEADERS): $(PERL_HEADERS_INPUT)
 	plugins/perl/generate_header
@@ -103,6 +103,7 @@ clean:
 	rm -f $(PIXMAP)
 	rm -f $(ALL_TOOLS)
 	rm -f $(PERL_HEADERS)
+	rm -f $(TEXT_HEADERS)
 	rm -f $(PLUGINS)
 	rm -f plugins/perl/*.o
 	rm -f plugins/python/*.o
@@ -111,7 +112,7 @@ clean:
 $(PIXMAP): $(PNGS)
 	$(PIXMAPCONVERT) --raw --build-list $(PIXMAPLIST) > $(PIXMAP)
 
-%.o: %.c $(PIXMAP)
+%.o: %.c $(PIXMAP) $(TEXT_HEADERS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(DESTDIR)$(bindir)/%: %
