@@ -17,6 +17,7 @@ OBJS_FE_GTK  = $(SRCS_FE_GTK:.c=.o)
 OBJS_FE_TEXT = $(SRCS_FE_TEXT:.c=.o)
 
 CFLAGS += -Os 
+HOSTCC ?= $(CC)
 
 ALL_TOOLS=ixchat
 
@@ -59,6 +60,14 @@ install-plugins: $(PLUGINS:%=$(DESTDIR)$(libdir)/xchat/plugins/%)
 $(DESTDIR)$(libdir)/xchat/plugins/%: %
 	install -d $(DESTDIR)$(libdir)/xchat/plugins
 	install $(INSTALL_FLAGS) 644 $< $@
+
+src/make-te: src/make-te.c
+	$(HOSTCC) $< -o $@
+
+src/common/textevents.h src/common/textenums.h: src/common/textevents.in src/make-te
+	src/make-te < src/common/textevents.in 2>src/common/textenums.h 1>src/common/textevents.h
+
+src/common/proto-irc.c: src/common/textevents.h src/common/textenums.h
 
 $(PERL_HEADERS): $(PERL_HEADERS_INPUT)
 	plugins/perl/generate_header
