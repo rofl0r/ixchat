@@ -8,7 +8,7 @@ me=`pwd`
 proj=ixchat
 projver=${proj}-${VER}
 repo=http://github.com/rofl0r/$proj
-repo=~/cdev/cdev/$proj
+repo=$PWD
 
 tempdir=/tmp/${proj}-0000
 rm -rf $tempdir
