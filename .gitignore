@@ -7,4 +7,6 @@
 src/pixmaps/inline_pngs.h
 plugins/perl/irc.pm.h
 plugins/perl/xchat.pm.h
+src/common/textenums.h
+src/common/textevents.h
 
