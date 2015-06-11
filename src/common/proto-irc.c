@@ -63,26 +63,26 @@ irc_nickserv (server *serv, char *cmd, char *arg1, char *arg2, char *arg3)
 	/* are all ircd authors idiots? */
 	switch (serv->loginmethod)
 	{
-	case LOGIN_MSG_NICKSERV:
-		tcp_sendf (serv, "PRIVMSG NICKSERV :%s %s%s%s\r\n", cmd, arg1, arg2, arg3);
-		break;
-	case LOGIN_NICKSERV:
-		tcp_sendf (serv, "NICKSERV %s %s%s%s\r\n", cmd, arg1, arg2, arg3);
-		break;
-	default: /* This may not work but at least it tries something when using /id or /ghost cmd */
-		tcp_sendf (serv, "NICKSERV %s %s%s%s\r\n", cmd, arg1, arg2, arg3);
-		break;
+		case LOGIN_MSG_NICKSERV:
+			tcp_sendf (serv, "PRIVMSG NICKSERV :%s %s%s%s\r\n", cmd, arg1, arg2, arg3);
+			break;
+		case LOGIN_NICKSERV:
+			tcp_sendf (serv, "NICKSERV %s %s%s%s\r\n", cmd, arg1, arg2, arg3);
+			break;
+		default: /* This may not work but at least it tries something when using /id or /ghost cmd */
+			tcp_sendf (serv, "NICKSERV %s %s%s%s\r\n", cmd, arg1, arg2, arg3);
+			break;
 #if 0
-	case LOGIN_MSG_NS:
-		tcp_sendf (serv, "PRIVMSG NS :%s %s%s%s\r\n", cmd, arg1, arg2, arg3);
-		break;
-	case LOGIN_NS:
-		tcp_sendf (serv, "NS %s %s%s%s\r\n", cmd, arg1, arg2, arg3);
-		break;
-	case LOGIN_AUTH:
-		/* why couldn't QuakeNet implement one of the existing ones? */
-		tcp_sendf (serv, "AUTH %s %s\r\n", arg1, arg2);
-		break;
+		case LOGIN_MSG_NS:
+			tcp_sendf (serv, "PRIVMSG NS :%s %s%s%s\r\n", cmd, arg1, arg2, arg3);
+			break;
+		case LOGIN_NS:
+			tcp_sendf (serv, "NS %s %s%s%s\r\n", cmd, arg1, arg2, arg3);
+			break;
+		case LOGIN_AUTH:
+			/* why couldn't QuakeNet implement one of the existing ones? */
+			tcp_sendf (serv, "AUTH %s %s\r\n", arg1, arg2);
+			break;
 #endif
 	}
 }
