@@ -1523,7 +1523,7 @@ xchat_emit_print (xchat_plugin *ph, const char *event_name, ...)
 	return i;
 }
 
-char *
+const char *
 xchat_gettext (xchat_plugin *ph, const char *msgid)
 {
 	/* so that plugins can use xchat's internal gettext strings. */

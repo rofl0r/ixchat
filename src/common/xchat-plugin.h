@@ -123,7 +123,7 @@ struct _xchat_plugin
 	time_t (*xchat_list_time) (xchat_plugin *ph,
 		xchat_list *xlist,
 		const char *name);
-	char *(*xchat_gettext) (xchat_plugin *ph,
+	const char *(*xchat_gettext) (xchat_plugin *ph,
 		const char *msgid);
 	void (*xchat_send_modes) (xchat_plugin *ph,
 		  const char **targets,
@@ -270,7 +270,7 @@ int
 xchat_emit_print (xchat_plugin *ph,
 		  const char *event_name, ...);
 
-char *
+const char *
 xchat_gettext (xchat_plugin *ph,
 	       const char *msgid);
 
