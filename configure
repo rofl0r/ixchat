@@ -155,8 +155,9 @@ add_config "includedir = $includedir"
 add_config "sysconfdir = $sysconfdir"
 
 add_config "CC ?= $CC"
-[ -z "$CPPFLAGS" ] || add_config "CPPFLAGS ?= $CPPFLAGS"
-[ -z "$CFLAGS" ] ||   add_config "CFLAGS ?= $CFLAGS"
+[ -z "$CPPFLAGS" ] || add_config "USER_CPPFLAGS = $CPPFLAGS"
+[ -z "$CFLAGS" ] ||   add_config "USER_CFLAGS = $CFLAGS"
+[ -z "$LDFLAGS" ] ||   add_config "USER_LDFLAGS = $LDFLAGS"
 
 add_cflags "-DXCHATLIBDIR=\\\"$libdir/xchat\\\""
 add_cflags "-DXCHATSHAREDIR=\\\"$prefix/share/xchat\\\""
@@ -298,6 +299,7 @@ if isbsd || ismac ; then
 	add_config "INSTALL_FLAGS=-m"
 fi
 
-
+add_cflags "\$(USER_CPPFLAGS) \$(USER_CFLAGS)"
+add_ldflags "\$(USER_LDFLAGS)"
 echo done, now run make \&\& make install
 
