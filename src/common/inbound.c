@@ -1525,7 +1525,7 @@ inbound_cap_ls (server *serv, char *nick, char *extensions_str)
 			strcat (buffer, "extended-join ");
 			want_cap = 1;
 		}
-
+#if 0
 		/* bouncers can prefix a name space to the extension so we should use.
 		 * znc <= 1.0 uses "znc.in/server-time" and newer use "znc.in/server-time-iso".
 		 */
@@ -1544,6 +1544,7 @@ inbound_cap_ls (server *serv, char *nick, char *extensions_str)
 			strcat (buffer, "server-time ");
 			want_cap = 1;
 		}
+#endif
 
 		/* if the SASL password is set AND auth mode is set to SASL, request SASL auth */
 		if (!strcmp (extension, "sasl")
