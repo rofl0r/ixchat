@@ -1710,11 +1710,11 @@ encode_sasl_pass_blowfish (char *user, char *pass, char *data)
 		return NULL;
 	BF_set_key (&key, key_size, secret);
 
-	encrypted_pass = (guchar*)malloc (pass_len);
-	memset (encrypted_pass, 0, pass_len);
-	plain_pass = (char*)malloc (pass_len);
-	memset (plain_pass, 0, pass_len);
-	memcpy (plain_pass, pass, pass_len);
+	encrypted_pass = calloc (pass_len, 1);
+	plain_pass = malloc (pass_len);
+	if(!encrypted_pass || !plain_pass)
+		return NULL;
+	strncpy (plain_pass, pass, pass_len); /* yes, we really want strncpy here */
 	out_ptr = (char*)encrypted_pass;
 	in_ptr = (char*)plain_pass;
 
