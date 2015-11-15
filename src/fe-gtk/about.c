@@ -55,7 +55,6 @@ menu_about (GtkWidget * wid, gpointer sess)
 
 	(snprintf) (buf, sizeof (buf),
 				 "An IRC Client for UNIX.\n\n"
-				 "This binary was compiled on "__DATE__"\n"
 				 "Using GTK %d.%d.%d X %d\n"
 				 "Running on %s",
 				 gtk_major_version, gtk_minor_version, gtk_micro_version,
@@ -118,7 +117,6 @@ menu_about (GtkWidget * wid, gpointer sess)
 				"%s\n"
 				"<b>Charset</b>: %s "
 				"<b>Renderer</b>: %s\n"
-				"<b>Compiled</b>: "__DATE__"\n\n"
 				"<small>\302\251 1998-2010 Peter \305\275elezn\303\275 &lt;zed@xchat.org></small>",
 					_("A multiplatform IRC Client"),
 					get_cpu_str(),

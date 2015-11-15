@@ -103,7 +103,6 @@ fe_new_window (struct session *sess, int focus)
 				"\n"
 				" \017xchat \00310"PACKAGE_VERSION"\n"
 				" \017Running on \00310%s \017glib \00310%d.%d.%d\n"
-				" \017This binary compiled \00310"__DATE__"\017\n",
 				get_cpu_str(),
 				glib_major_version, glib_minor_version, glib_micro_version);
 	fe_print_text (sess, buf, 0);
