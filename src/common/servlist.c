@@ -351,7 +351,7 @@ static const struct defaultserver def[] =
 	{0,			"irc.oceanius.com"},
 
 	{"OFTC",	0},
-	{0,			"irc.oftc.net"},
+	{0,			"irc.oftc.net/+6697"},
 
 	{"OtherNet",	0},
 	{0,			"irc.othernet.org"},
