@@ -187,6 +187,11 @@ static const struct defaultserver def[] =
 	{"EnterTheGame",	0},
 	{0,			"IRC.EnterTheGame.Com"},
 
+	{"EsperNet",	0},
+	{0,			"irc.esper.net/+6697"},
+	{0,			"na.irc.esper.net/+6697"},
+	{0,			"eu.irc.esper.net/+6697"},
+
 	{"EUIrc",	0},
 	{0,			"irc.euirc.net"},
 	{0,			"irc.ham.de.euirc.net"},
