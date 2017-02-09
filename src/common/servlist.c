@@ -214,7 +214,7 @@ static const struct defaultserver def[] =
 	{0,			"irc.vendetta.com"},
 
 	{"freenode", 0, "#xchat", 0, LOGIN_SASL},
-	{0,				"irc.freenode.net"},
+	{0,				"chat.freenode.net/+6697"},
 
 /*	{"Freeworld",	0},
 	{0,			"kabel.freeworld.nu"},
