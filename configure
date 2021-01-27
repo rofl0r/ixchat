@@ -180,7 +180,11 @@ for i in libsexy gtkspell ; do
 			add_cflags "$spell_flags"
 			spell_flags=$(get_pkgconf_ldflags $i)
 			add_ldflags "$spell_flags"
-			[ "$i" = "libsexy" ] add_cflags "-DUSE_LIBSEXY" || add_cflags "-DUSE_GTKSPELL"
+			if [ "$i" = "libsexy" ] ; then
+				add_cflags "-DUSE_LIBSEXY"
+			else
+				add_cflags "-DUSE_GTKSPELL"
+			fi
 			printf "yes\n"
 		else
 			printf "no\n"
