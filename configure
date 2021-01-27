@@ -173,7 +173,7 @@ for i in libsexy gtkspell ; do
 	eval enabled=\${feature_$i}
 	printf "checking whether to use library $i..."
 	if [ "$enabled" = yes ] || [ "$enabled" = auto ] ; then
-		local l=$i
+		l=$i
 		[ $l = gtkspell ] && l=gtkspell-2.0
 		spell_flags=$(get_pkgconf_cflags $l)
 		if [ ! -z "$spell_flags" ] ; then
