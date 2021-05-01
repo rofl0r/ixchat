@@ -49,7 +49,9 @@ add_pkgconf_ldflags() {
 
 add_lib() {
 	add_pkgconf_cflags "$1" "$2"
+	ADD_LIB_CFLAGS="$flags"
 	add_pkgconf_ldflags "$1" "$3"
+	ADD_LIB_LDFLAGS="$flags"
 }
 
 check_program() {
@@ -148,7 +150,7 @@ check_compile() {
 	printf "checking %s ... " "$1"
 	printf "$3" > "$tmpc"
 	local res=0
-	$CC $OUR_CPPFLAGS $CPPFLAGS $2 $CFLAGS "$tmpc" $OUR_LDFLAGS -o /dev/null >/dev/null 2>&1 \
+	$CC $TMP_FLAGS $OUR_CPPFLAGS $CPPFLAGS $2 $CFLAGS "$tmpc" $OUR_LDFLAGS -o /dev/null >/dev/null 2>&1 \
 	|| res=1
 	test x$res = x0 && \
 	{ printf "yes\n" ; test x"$2" = x || OUR_CPPFLAGS="$OUR_CPPFLAGS $2" ; } \
@@ -159,7 +161,7 @@ check_compile() {
 check_define() {
 	printf "checking whether \$CC defines %s ... " "$1"
 	local res=1
-	$CC $OUR_CPPFLAGS $CPPFLAGS $CFLAGS -dM -E - </dev/null | grep "$1" >/dev/null && res=0
+	$CC $TMP_FLAGS $OUR_CPPFLAGS $CPPFLAGS $CFLAGS -dM -E - </dev/null | grep "$1" >/dev/null && res=0
 	test x$res = x0 && printf "yes\n" || printf "no\n"
 	return $res
 }
@@ -178,7 +180,7 @@ check_compile_run() {
 
 check_link_silent() {
 	printf "$2" > "$tmpc"
-	$CC $OUR_CPPFLAGS $CPPFLAGS $1 $CFLAGS "$tmpc" -o /dev/null >/dev/null 2>&1
+	$CC $TMP_FLAGS $OUR_CPPFLAGS $CPPFLAGS $1 $CFLAGS "$tmpc" -o /dev/null >/dev/null 2>&1
 }
 
 check_link() {
@@ -189,43 +191,12 @@ check_link() {
 	return $res
 }
 
-test -z "$CC" && CC=cc
-
-check_compile 'whether C compiler works' '' 'int main() {return 0;}' || fail 'error: install a C compiler and library'
-check_compile 'whether we have memrchr()' "-DGNU_SOURCE -DHAVE_MEMRCHR" \
-'#define _GNU_SOURCE\n#include <string.h>\nint main() {\nvoid *p = memrchr("foo", 0, 3);\nreturn 0;}'
-
-check_link 'whether we have ssl lib and headers' '-lssl -lcrypto' \
-  "#include <openssl/ssl.h>\nint main() { return 0; }" || \
-  fail 'ssl library not found'
-OUR_LDFLAGS='-lssl -lcrypto'
-
-check_compile 'whether we have SSL_CTX_get_ssl_method()' \
-  '-DHAVE_SSL_CTX_get_ssl_method' \
-  "#include <openssl/ssl.h>\nint main() { SSL_CTX *c = 0; (void)SSL_CTX_get_ssl_method(c); return 0;}"
-
-check_compile 'whether we have DH_set0_pqg()' \
-  '-DHAVE_DH_set0_pqg' \
-  "#include <openssl/ssl.h>\nint main() { DH *c = 0; (void)DH_set0_pqg(c,0,0,0); return 0;}"
-
-check_compile 'whether we have DH_get0_pub_key()' \
-  '-DHAVE_DH_get0_pub_key' \
-  "#include <openssl/ssl.h>\nint main() { DH *c = 0; (void)DH_get0_pub_key(c); return 0;}"
-
-for i in  python perl tcl libsexy gtkspell ; do eval feature_$i=auto ; done
-while true ; do
-	case $1 in
-	-*) parsearg "$1"; shift;;
-	*) break ;;
-	esac
-done
-
+[ -z "$CC" ] && CC=cc
 [ -z "$exec_prefix" ] && exec_prefix=$prefix
 [ -z "$libdir" ] && libdir=$prefix/lib
 [ -z "$includedir" ] && includedir=$prefix/include
 [ -z "$sysconfdir" ] && sysconfdir=$prefix/etc
 [ -z "$bindir" ] && bindir=$exec_prefix/bin
-[ -z "$CC" ] && CC=cc
 
 clear_config
 
@@ -239,16 +210,51 @@ add_config "sysconfdir = $sysconfdir"
 add_config "CC ?= $CC"
 
 [ -z "$CPPFLAGS" ] || add_config "USER_CPPFLAGS = $CPPFLAGS"
-[ -z "$OUR_CPPFLAGS" ] || add_config "USER_CPPFLAGS += $OUR_CPPFLAGS"
 [ -z "$CFLAGS" ] ||   add_config "USER_CFLAGS = $CFLAGS"
 [ -z "$LDFLAGS" ] ||   add_config "USER_LDFLAGS = $LDFLAGS"
+
+
+check_compile 'whether C compiler works' '' 'int main() {return 0;}' || fail 'error: install a C compiler and library'
+check_compile 'whether we have memrchr()' "-DGNU_SOURCE -DHAVE_MEMRCHR" \
+'#define _GNU_SOURCE\n#include <string.h>\nint main() {\nvoid *p = memrchr("foo", 0, 3);\nreturn 0;}'
+
+add_lib openssl "" "-lssl -lcrypto"
+
+TMP_FLAGS="$ADD_LIB_CFLAGS"
+check_link 'whether we have ssl lib and headers' "$ADD_LIB_LDFLAGS" \
+  "#include <openssl/ssl.h>\nint main() { return 0; }" || \
+  fail 'ssl library not found'
+OUR_LDFLAGS="$ADD_LIB_LDFLAGS"
+
+check_compile 'whether we have SSL_CTX_get_ssl_method()' \
+  '-DHAVE_SSL_CTX_get_ssl_method' \
+  "#include <openssl/ssl.h>\nint main() { SSL_CTX *c = 0; (void)SSL_CTX_get_ssl_method(c); return 0;}"
+
+check_compile 'whether we have DH_set0_pqg()' \
+  '-DHAVE_DH_set0_pqg' \
+  "#include <openssl/ssl.h>\nint main() { DH *c = 0; (void)DH_set0_pqg(c,0,0,0); return 0;}"
+
+check_compile 'whether we have DH_get0_pub_key()' \
+  '-DHAVE_DH_get0_pub_key' \
+  "#include <openssl/ssl.h>\nint main() { DH *c = 0; (void)DH_get0_pub_key(c); return 0;}"
+TMP_FLAGS=
+
+for i in  python perl tcl libsexy gtkspell ; do eval feature_$i=auto ; done
+while true ; do
+	case $1 in
+	-*) parsearg "$1"; shift;;
+	*) break ;;
+	esac
+done
+
+[ -z "$OUR_CPPFLAGS" ] || add_config "USER_CPPFLAGS += $OUR_CPPFLAGS"
+
 
 add_cflags "-DXCHATLIBDIR=\\\"$libdir/xchat\\\""
 add_cflags "-DXCHATSHAREDIR=\\\"$prefix/share/xchat\\\""
 add_cflags "-DUSE_OPENSSL"
 
 for lib in $libs ; do add_lib "$lib" ; done
-add_lib openssl "" "-lssl -lcrypto"
 
 check_link 'whether we have libdl' '-ldl' \
   "int main() { return 0; }" && add_ldflags '-ldl'
