@@ -1699,6 +1699,10 @@ fail:
 	return 0;
 }
 
+#ifndef HAVE_DH_get0_pub_key
+#define DH_get0_pub_key(X) X->pub_key
+#endif
+
 char *
 encode_sasl_pass_blowfish (char *user, char *pass, char *data)
 {
@@ -1730,16 +1734,16 @@ encode_sasl_pass_blowfish (char *user, char *pass, char *data)
 		BF_ecb_encrypt ((unsigned char*)in_ptr, (unsigned char*)out_ptr, &key, BF_ENCRYPT);
 
 	/* Create response */
-	length = 2 + BN_num_bytes (dh->pub_key) + pass_len + user_len + 1;
+	length = 2 + BN_num_bytes (DH_get0_pub_key(dh)) + pass_len + user_len + 1;
 	response = (char*)malloc (length);
 	out_ptr = response;
 
 	/* our key */
-	size16 = htons ((guint16)BN_num_bytes (dh->pub_key));
+	size16 = htons ((guint16)BN_num_bytes (DH_get0_pub_key(dh)));
 	memcpy (out_ptr, &size16, sizeof(size16));
 	out_ptr += 2;
-	BN_bn2bin (dh->pub_key, (guchar*)out_ptr);
-	out_ptr += BN_num_bytes (dh->pub_key);
+	BN_bn2bin (DH_get0_pub_key(dh), (guchar*)out_ptr);
+	out_ptr += BN_num_bytes (DH_get0_pub_key(dh));
 
 	/* username */
 	memcpy (out_ptr, user, user_len + 1);
@@ -1821,7 +1825,7 @@ encode_sasl_pass_aes (char *user, char *pass, char *data)
 	size16 = htons ((guint16)key_size);
 	memcpy (out_ptr, &size16, sizeof(size16));
 	out_ptr += 2;
-	BN_bn2bin (dh->pub_key, (guchar*)out_ptr);
+	BN_bn2bin (DH_get0_pub_key(dh), (guchar*)out_ptr);
 	out_ptr += key_size;
 
 	/* iv */
