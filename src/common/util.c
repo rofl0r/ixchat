@@ -1625,7 +1625,7 @@ parse_dh (char *str, DH **dh_out, unsigned char **secret_out, int *keysize_out)
 	gsize data_len;
 	guint size;
 	guint16 size16;
-	BIGNUM *pubkey;
+	BIGNUM *pubkey, *p, *g;
 	gint key_size;
 
 	dh = DH_new();
@@ -1642,7 +1642,7 @@ parse_dh (char *str, DH **dh_out, unsigned char **secret_out, int *keysize_out)
 	if (size > data_len)
 		goto fail;
 
-	dh->p = BN_bin2bn (data, size, NULL);
+	p = BN_bin2bn (data, size, NULL);
 	data += size;
 
 	/* Generator */
@@ -1657,7 +1657,7 @@ parse_dh (char *str, DH **dh_out, unsigned char **secret_out, int *keysize_out)
 	if (size > data_len)
 		goto fail;
 
-	dh->g = BN_bin2bn (data, size, NULL);
+	g = BN_bin2bn (data, size, NULL);
 	data += size;
 
 	/* pub key */
@@ -1670,6 +1670,14 @@ parse_dh (char *str, DH **dh_out, unsigned char **secret_out, int *keysize_out)
 	data_len -= 2;
 
 	pubkey = BN_bin2bn (data, size, NULL);
+
+#ifdef HAVE_DH_set0_pqg
+	DH_set0_pqg(dh, p, NULL, g);
+#else
+	dh->p = p;
+	dh->g = g;
+#endif
+
 	if (!(DH_generate_key (dh)))
 		goto fail;
 
