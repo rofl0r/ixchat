@@ -147,7 +147,7 @@ check_compile() {
 	printf "checking %s ... " "$1"
 	printf "$3" > "$tmpc"
 	local res=0
-	$CC $OUR_CPPFLAGS $CPPFLAGS $2 $CFLAGS "$tmpc" -o /dev/null >/dev/null 2>&1 \
+	$CC $OUR_CPPFLAGS $CPPFLAGS $2 $CFLAGS $OUR_LDFLAGS "$tmpc" -o /dev/null >/dev/null 2>&1 \
 	|| res=1
 	test x$res = x0 && \
 	{ printf "yes\n" ; test x"$2" = x || OUR_CPPFLAGS="$OUR_CPPFLAGS $2" ; } \
@@ -193,6 +193,15 @@ test -z "$CC" && CC=cc
 check_compile 'whether C compiler works' '' 'int main() {return 0;}' || fail 'error: install a C compiler and library'
 check_compile 'whether we have memrchr()' "-DGNU_SOURCE -DHAVE_MEMRCHR" \
 '#define _GNU_SOURCE\n#include <string.h>\nint main() {\nvoid *p = memrchr("foo", 0, 3);\nreturn 0;}'
+
+check_link 'whether we have ssl lib and headers' '-lssl -lcrypto' \
+  "#include <openssl/ssl.h>\nint main() { return 0; }" || \
+  fail 'ssl library not found'
+OUR_LDFLAGS='-lssl -lcrypto'
+
+check_compile 'whether we have SSL_CTX_get_ssl_method()' \
+  '-DHAVE_SSL_CTX_get_ssl_method' \
+  "#include <openssl/ssl.h>\nint main() { SSL_CTX *c = 0; (void)SSL_CTX_get_ssl_method(c); return 0}"
 
 for i in  python perl tcl libsexy gtkspell ; do eval feature_$i=auto ; done
 while true ; do

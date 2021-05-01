@@ -34,6 +34,10 @@
 #define SSL_OP_SINGLE_ECDH_USE 0
 #endif
 
+#ifndef HAVE_SSL_CTX_get_ssl_method
+#define SSL_CTX_get_ssl_method(CTX) CTX->method
+#endif
+
 /* globals */
 static struct chiper_info chiper_info;		/* static buffer for _SSL_get_cipher_info() */
 static char err_buf[256];			/* generic error buffer */
@@ -134,6 +138,8 @@ int
 _SSL_get_cert_info (struct cert_info *cert_info, SSL * ssl)
 {
 	X509 *peer_cert;
+	X509_PUBKEY *peer_pub_key;
+	ASN1_OBJECT *algorithm;
 	EVP_PKEY *peer_pkey;
 	/* EVP_PKEY *ca_pkey; */
 	/* EVP_PKEY *tmp_pkey; */
@@ -153,8 +159,10 @@ _SSL_get_cert_info (struct cert_info *cert_info, SSL * ssl)
 	broke_oneline (cert_info->subject, cert_info->subject_word);
 	broke_oneline (cert_info->issuer, cert_info->issuer_word);
 
-	alg = OBJ_obj2nid (peer_cert->cert_info->key->algor->algorithm);
-	sign_alg = OBJ_obj2nid (peer_cert->sig_alg->algorithm);
+	peer_pub_key = X509_get_X509_PUBKEY (peer_cert);
+	X509_PUBKEY_get0_param (&algorithm, NULL, NULL, NULL, peer_pub_key);
+	alg = OBJ_obj2nid (algorithm);
+	sign_alg = X509_get_signature_type (peer_cert);
 	ASN1_TIME_snprintf (notBefore, sizeof (notBefore),
 							  X509_get_notBefore (peer_cert));
 	ASN1_TIME_snprintf (notAfter, sizeof (notAfter),
@@ -197,7 +205,7 @@ _SSL_get_cert_info (struct cert_info *cert_info, SSL * ssl)
 struct chiper_info *
 _SSL_get_cipher_info (SSL * ssl)
 {
-	SSL_CIPHER *c;
+	const SSL_CIPHER *c;
 
 
 	c = SSL_get_current_cipher (ssl);
@@ -272,6 +280,7 @@ SSL *
 _SSL_socket (SSL_CTX *ctx, int sd)
 {
 	SSL *ssl;
+	SSL_METHOD *method;
 
 
 	if (!(ssl = SSL_new (ctx)))
@@ -279,7 +288,9 @@ _SSL_socket (SSL_CTX *ctx, int sd)
 		__SSL_critical_error ("SSL_new");
 
 	SSL_set_fd (ssl, sd);
-	if (ctx->method == SSLv23_client_method())
+
+	method = SSL_CTX_get_ssl_method (ctx);
+	if (method == SSLv23_client_method())
 		SSL_set_connect_state (ssl);
 	else
 	        SSL_set_accept_state(ssl);
