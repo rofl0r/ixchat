@@ -91,10 +91,10 @@ plugins/perl/perl.o: plugins/perl/perl.c $(PERL_HEADERS)
 	$(CC) $(CFLAGS) $(PERL_CFLAGS) -fPIC -c $< -o $@
 
 ixchat: $(OBJS) $(OBJS_FE_GTK)
-	$(CC) $(LDFLAGS) -rdynamic -o $@ $(OBJS) $(OBJS_FE_GTK)
+	$(CC) -rdynamic -o $@ $(OBJS) $(OBJS_FE_GTK) $(LDFLAGS)
 
 ixchat-text: $(OBJS) $(OBJS_FE_TEXT)
-	$(CC) $(LDFLAGS) -rdynamic -o $@ $(OBJS) $(OBJS_FE_TEXT)
+	$(CC) -rdynamic -o $@ $(OBJS) $(OBJS_FE_TEXT) $(LDFLAGS)
 
 clean:
 	rm -f $(OBJS)
