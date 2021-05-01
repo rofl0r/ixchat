@@ -130,6 +130,70 @@ parsearg() {
 	esac
 }
 
+fail() { printf "%s\n" "$1" >&2 ; exit 1 ; }
+
+# Get a temporary filename
+i=0
+set -C
+while : ; do i=$(($i+1))
+tmpc="./conf$$-$PPID-$i.c"
+2>|/dev/null > "$tmpc" && break
+test "$i" -gt 50 && fail "$0: cannot create temporary file $tmpc"
+done
+set +C
+trap 'rm "$tmpc"' EXIT INT QUIT TERM HUP
+
+check_compile() {
+	printf "checking %s ... " "$1"
+	printf "$3" > "$tmpc"
+	local res=0
+	$CC $OUR_CPPFLAGS $CPPFLAGS $2 $CFLAGS "$tmpc" -o /dev/null >/dev/null 2>&1 \
+	|| res=1
+	test x$res = x0 && \
+	{ printf "yes\n" ; test x"$2" = x || OUR_CPPFLAGS="$OUR_CPPFLAGS $2" ; } \
+	|| printf "no\n"
+	return $res
+}
+
+check_define() {
+	printf "checking whether \$CC defines %s ... " "$1"
+	local res=1
+	$CC $OUR_CPPFLAGS $CPPFLAGS $CFLAGS -dM -E - </dev/null | grep "$1" >/dev/null && res=0
+	test x$res = x0 && printf "yes\n" || printf "no\n"
+	return $res
+}
+
+check_compile_run() {
+	printf "checking %s ... " "$1"
+	printf "$2" > "$tmpc"
+	local res=0
+	$CC $OUR_CPPFLAGS $CPPFLAGS $CFLAGS "$tmpc" -o "$tmpc".out >/dev/null 2>&1 \
+	|| res=1
+	test x$res = x0 && { "$tmpc".out || res=1 ; }
+	rm -f "$tmpc".out
+	test x$res = x0 && printf "yes\n" || printf "no\n"
+	return $res
+}
+
+check_link_silent() {
+	printf "$2" > "$tmpc"
+	$CC $OUR_CPPFLAGS $CPPFLAGS $1 $CFLAGS "$tmpc" -o /dev/null >/dev/null 2>&1
+}
+
+check_link() {
+	printf "checking %s ... " "$1"
+	local res=0
+	check_link_silent "$2" "$3" || res=1
+	test x$res = x0 && printf "yes\n" || printf "no\n"
+	return $res
+}
+
+test -z "$CC" && CC=cc
+
+check_compile 'whether C compiler works' '' 'int main() {return 0;}' || fail 'error: install a C compiler and library'
+check_compile 'whether we have memrchr()' "-DGNU_SOURCE -DHAVE_MEMRCHR" \
+'#define _GNU_SOURCE\n#include <string.h>\nint main() {\nvoid *p = memrchr("foo", 0, 3);\nreturn 0;}'
+
 for i in  python perl tcl libsexy gtkspell ; do eval feature_$i=auto ; done
 while true ; do
 	case $1 in
@@ -155,7 +219,9 @@ add_config "includedir = $includedir"
 add_config "sysconfdir = $sysconfdir"
 
 add_config "CC ?= $CC"
+
 [ -z "$CPPFLAGS" ] || add_config "USER_CPPFLAGS = $CPPFLAGS"
+[ -z "$OUR_CPPFLAGS" ] || add_config "USER_CPPFLAGS += $OUR_CPPFLAGS"
 [ -z "$CFLAGS" ] ||   add_config "USER_CFLAGS = $CFLAGS"
 [ -z "$LDFLAGS" ] ||   add_config "USER_LDFLAGS = $LDFLAGS"
 
