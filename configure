@@ -250,6 +250,9 @@ add_cflags "-DUSE_OPENSSL"
 for lib in $libs ; do add_lib "$lib" ; done
 add_lib openssl "" "-lssl -lcrypto"
 
+check_link 'whether we have libdl' '-ldl' \
+  "int main() { return 0; }" && add_ldflags '-ldl'
+
 prog1=$(check_program "gdk-pixbuf-csource" 1)
 add_config "PIXMAPCONVERT = $prog1"
 
