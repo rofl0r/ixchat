@@ -39,6 +39,7 @@
 #include "util.h"
 #include "xchatc.h"
 #include "servlist.h"
+#include "url.h"
 
 static void
 irc_login (server *serv, char *user, char *realname)

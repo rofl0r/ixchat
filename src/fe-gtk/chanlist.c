@@ -51,7 +51,7 @@
 #include "../common/server.h"
 #include "gtkutil.h"
 #include "maingui.h"
-
+#include "menu.h"
 
 #include "custom-list.h"
 

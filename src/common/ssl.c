@@ -23,6 +23,8 @@
 #include <string.h>				  /* strncpy() */
 #include "ssl.h"					  /* struct cert_info */
 #include "inet.h"
+#include "util.h"
+
 #ifndef MIN
 #define MIN(a, b) (a < b ? a : b)
 #endif

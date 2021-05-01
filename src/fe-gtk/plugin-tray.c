@@ -9,6 +9,7 @@
 #include "../common/server.h"
 #include "../common/fe.h"
 #include "../common/util.h"
+#include "../common/outbound.h"
 #include "fe-gtk.h"
 #include "pixmaps.h"
 #include "maingui.h"

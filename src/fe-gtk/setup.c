@@ -21,6 +21,8 @@
 #include "palette.h"
 #include "pixmaps.h"
 #include "menu.h"
+#include "setup.h"
+#include "plugin-tray.h"
 
 #include <gtk/gtkcolorseldialog.h>
 #include <gtk/gtktable.h>

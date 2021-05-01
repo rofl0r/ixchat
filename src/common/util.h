@@ -14,6 +14,8 @@
 #ifndef XCHAT_UTIL_H
 #define XCHAT_UTIL_H
 
+#include <glib.h>
+
 #define rfc_tolower(c) (rfc_tolowertab[(unsigned char)(c)])
 
 extern const unsigned char rfc_tolowertab[];

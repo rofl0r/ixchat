@@ -46,6 +46,7 @@
 #include "xtext.h"
 #include "palette.h"
 #include "menu.h"
+#include "setup.h"
 #include "notifygui.h"
 #include "textgui.h"
 #include "fkeys.h"
@@ -695,7 +696,7 @@ fe_ctrl_gui (session *sess, fe_gui_action action, int arg)
 		mg_detach (sess, arg);	/* arg: 0=toggle 1=detach 2=attach */
 		break;
 	case FE_GUI_APPLY:
-		setup_apply_real (TRUE, TRUE);
+		setup_apply_real (TRUE, TRUE, FALSE);
 	}
 }
 
